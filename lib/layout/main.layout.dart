@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:panal_flutter_app/views/home/home_view.dart';
 import 'package:panal_flutter_app/views/warehouse/warehouse_view.dart';
+import 'package:panal_flutter_app/views/services/services_view.dart'; // Import ServicesView
 import 'package:panal_flutter_app/views/tools/tools_view.dart';
 import 'package:panal_flutter_app/views/maintenance/maintenance_view.dart';
 import 'package:panal_flutter_app/utils/app_colors.dart';
@@ -14,33 +15,37 @@ class MainLayout extends StatefulWidget {
 }
 
 class _MainLayoutState extends State<MainLayout> {
-  int _currentIndex = 0;
+  int _currentIndex = 2; // Set default index to 2 (Home/Inicio)
 
   // Actual Views
   final List<Widget> _pages = [
-    const HomeView(),
+    const ServicesView(),
     const WarehouseView(),
+    const HomeView(),
     const ToolsView(),
     const MaintenanceView(),
   ];
 
   final List<String> _titles = [
-    'Inicio',
+    'Servicios',
     'Almacén',
+    'Inicio',
     'Herramientas',
     'Mantenimiento',
   ];
 
   final List<IconData> _icons = [
-    Icons.home_outlined,
+    Icons.grid_view_outlined,
     Icons.inventory_2_outlined,
+    Icons.home_outlined,
     Icons.build_outlined,
     Icons.engineering_outlined,
   ];
 
   final List<IconData> _activeIcons = [
-    Icons.home,
+    Icons.grid_view,
     Icons.inventory_2,
+    Icons.home,
     Icons.build,
     Icons.engineering,
   ];
@@ -87,18 +92,11 @@ class _MainLayoutState extends State<MainLayout> {
       bottomNavigationBar: Container(
         height: 80,
         decoration: const BoxDecoration(
-          color: AppColors.menuBackground,
+          color: AppColors.headerBackground,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 10,
-              offset: Offset(0, -2),
-            ),
-          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -135,23 +133,23 @@ class _MainLayoutState extends State<MainLayout> {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AppColors
-                                  .secondaryBase // Changed to Secondary Blue
+                                  .menuBackground // Changed to Secondary Blue
                             : Colors.transparent,
                         shape: BoxShape.circle,
                         boxShadow: isSelected
                             ? [
                                 BoxShadow(
-                                  color: AppColors.secondaryBase.withOpacity(
+                                  color: AppColors.menuBackground.withOpacity(
                                     0.4,
                                   ),
-                                  blurRadius: 10,
+                                  blurRadius: 5,
                                   offset: const Offset(0, 5),
                                 ),
                               ]
                             : null,
                         border: isSelected
                             ? Border.all(
-                                color: AppColors.menuBackground,
+                                color: AppColors.headerBackground,
                                 width: 4,
                               ) // "Cutout" effect
                             : null,
@@ -161,7 +159,7 @@ class _MainLayoutState extends State<MainLayout> {
                         size: 28,
                         color: isSelected
                             ? Colors.white
-                            : Colors.white.withOpacity(0.5),
+                            : Colors.black.withOpacity(0.5),
                       ),
                     ),
                     // Optional label, hidden when selected if desired, or always shown
@@ -173,7 +171,7 @@ class _MainLayoutState extends State<MainLayout> {
                             ? '${_titles[index].substring(0, 6)}..'
                             : _titles[_indexTitle(index)],
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.black.withOpacity(0.5),
                           fontSize: 10,
                         ),
                       ),
