@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:panal_flutter_app/views/home/home_view.dart';
 import 'package:panal_flutter_app/views/warehouse/warehouse_view.dart';
 import 'package:panal_flutter_app/views/services/services_view.dart'; // Import ServicesView
-import 'package:panal_flutter_app/views/tools/tools_view.dart';
 import 'package:panal_flutter_app/views/maintenance/maintenance_view.dart';
+import 'package:panal_flutter_app/views/system/system_view.dart';
 import 'package:panal_flutter_app/utils/app_colors.dart';
 
 class MainLayout extends StatefulWidget {
@@ -22,32 +22,32 @@ class _MainLayoutState extends State<MainLayout> {
     const ServicesView(),
     const WarehouseView(),
     const HomeView(),
-    const ToolsView(),
     const MaintenanceView(),
+    const SystemView(),
   ];
 
   final List<String> _titles = [
     'Servicios',
     'Almacén',
     'Inicio',
-    'Herramientas',
     'Mantenimiento',
+    'Sistema',
   ];
 
   final List<IconData> _icons = [
     Icons.grid_view_outlined,
     Icons.inventory_2_outlined,
     Icons.home_outlined,
-    Icons.build_outlined,
     Icons.engineering_outlined,
+    Icons.settings_outlined,
   ];
 
   final List<IconData> _activeIcons = [
     Icons.grid_view,
     Icons.inventory_2,
     Icons.home,
-    Icons.build,
     Icons.engineering,
+    Icons.settings,
   ];
 
   @override
