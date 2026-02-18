@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:panal_flutter_app/layout/main.layout.dart';
-import 'package:panal_flutter_app/utils/app_theme.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:panal_flutter_app/layout/main.layout.dart'; // Ensure this import is correct based on your project structure
+import 'package:panal_flutter_app/utils/app_colors.dart';
+import 'package:panal_flutter_app/controllers/auth_controller.dart';
+import 'package:panal_flutter_app/views/auth/login_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'utils/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ),
-  );
-
   runApp(const MyApp());
 }
 
@@ -26,7 +22,44 @@ class MyApp extends StatelessWidget {
       title: 'Panal App',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const MainLayout(),
+      home: const AuthCheck(),
     );
+  }
+}
+
+class AuthCheck extends StatefulWidget {
+  const AuthCheck({super.key});
+
+  @override
+  State<AuthCheck> createState() => _AuthCheckState();
+}
+
+class _AuthCheckState extends State<AuthCheck> {
+  bool _isLoading = true;
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    final authController = AuthController();
+    final isLoggedIn = await authController.isAuthenticated();
+    if (mounted) {
+      setState(() {
+        _isLoggedIn = isLoggedIn;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    return _isLoggedIn ? const MainLayout() : const LoginView();
   }
 }
