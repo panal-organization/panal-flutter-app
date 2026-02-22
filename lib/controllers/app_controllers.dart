@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/models.dart';
 
 class ApiController {
-  static const String baseUrl = 'http://localhost:3000/api';
+  static const String baseUrl = 'http://3.19.63.85:3000/api';
 
   Future<List<T>> get<T>(
     String endpoint,

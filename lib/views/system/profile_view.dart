@@ -230,7 +230,7 @@ class _ProfileViewState extends State<ProfileView> {
                               ? NetworkImage(
                                   user.foto!.startsWith('http')
                                       ? user.foto!
-                                      : 'http://localhost:3000${user.foto!}',
+                                      : 'http://3.19.63.85:3000${user.foto!}',
                                 )
                               : null,
                           child: user.foto == null

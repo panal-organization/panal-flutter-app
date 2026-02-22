@@ -6,10 +6,10 @@ import 'app_controllers.dart';
 
 class AuthController {
   // Utilizing the base URL from ApiController or defining it here if it needs to be specific
-  // ApiController.baseUrl is 'http://localhost:3000/api'
+  // ApiController.baseUrl is 'http://3.19.63.85:3000/api'
   // Endpoint requested is POST /api/auth/sign-in
 
-  static const String _baseUrl = 'http://localhost:3000/api';
+  static const String _baseUrl = 'http://3.19.63.85:3000/api';
 
   Future<AuthResponse> signIn(String correo, String contrasena) async {
     try {
