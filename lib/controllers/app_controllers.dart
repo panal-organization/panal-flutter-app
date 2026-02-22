@@ -83,6 +83,26 @@ class ApiController {
       throw Exception('Error deleting data: $e');
     }
   }
+
+  Future<bool> patchMultipart(
+    String endpoint,
+    String id,
+    String fieldName,
+    String filePath,
+  ) async {
+    try {
+      final request = http.MultipartRequest(
+        'PATCH',
+        Uri.parse('$baseUrl/$endpoint/$id'),
+      );
+      request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception('Error uploading file: $e');
+    }
+  }
 }
 
 // Specific Controllers
@@ -135,6 +155,9 @@ class UsuariosController extends ApiController {
   Future<bool> update(String id, Usuarios item) =>
       put(endpoint, id, item.toJson());
   Future<bool> remove(String id) => delete(endpoint, id);
+
+  Future<bool> updatePhoto(String id, String filePath) =>
+      patchMultipart(endpoint, id, 'foto', filePath);
 }
 
 class RolesController extends ApiController {

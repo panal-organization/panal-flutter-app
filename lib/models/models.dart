@@ -89,6 +89,9 @@ class Usuarios {
   String? contrasena;
   bool? estatus;
   String? rolId;
+  String? foto;
+  String? createdAt;
+  String? updatedAt;
 
   Usuarios({
     this.id,
@@ -97,6 +100,9 @@ class Usuarios {
     this.contrasena,
     this.estatus,
     this.rolId,
+    this.foto,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory Usuarios.fromJson(Map<String, dynamic> json) {
@@ -107,6 +113,9 @@ class Usuarios {
       contrasena: json['contrasena'],
       estatus: json['estatus'],
       rolId: json['rol_id'],
+      foto: json['foto'],
+      createdAt: json['createdAt'],
+      updatedAt: json['updatedAt'],
     );
   }
 
@@ -118,6 +127,9 @@ class Usuarios {
       'contrasena': contrasena,
       'estatus': estatus,
       'rol_id': rolId,
+      'foto': foto,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
     };
     data.removeWhere((key, value) => value == null);
     return data;

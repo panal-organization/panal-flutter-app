@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:panal_flutter_app/layout/main.layout.dart'; // Ensure this import is correct based on your project structure
 import 'package:panal_flutter_app/utils/app_colors.dart';
 import 'package:panal_flutter_app/controllers/auth_controller.dart';

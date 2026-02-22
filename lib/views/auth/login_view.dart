@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import '../../controllers/auth_controller.dart';
 import '../../layout/main.layout.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/app_toast.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -40,7 +40,7 @@ class _LoginViewState extends State<LoginView> {
         _passwordController.text,
       );
 
-      _showToast("Bienvenido", AppColors.successBase);
+      _showToast("Bienvenido", isError: false);
 
       if (mounted) {
         Navigator.of(context).pushReplacement(
@@ -48,7 +48,7 @@ class _LoginViewState extends State<LoginView> {
         );
       }
     } catch (e) {
-      _showToast(e.toString(), AppColors.dangerBase);
+      _showToast(e.toString(), isError: true);
     } finally {
       if (mounted) {
         setState(() {
@@ -58,16 +58,8 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
-  void _showToast(String message, Color backgroundColor) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 1,
-      backgroundColor: backgroundColor,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
+  void _showToast(String message, {bool isError = false}) {
+    AppToast.show(context, message, isError: isError);
   }
 
   @override

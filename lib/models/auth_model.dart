@@ -24,6 +24,9 @@ class User {
   final String correo;
   final String rolId;
   final bool estatus;
+  final String? foto;
+  final String? createdAt;
+  final String? updatedAt;
 
   User({
     required this.id,
@@ -31,6 +34,9 @@ class User {
     required this.correo,
     required this.rolId,
     required this.estatus,
+    this.foto,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -40,6 +46,9 @@ class User {
       correo: json['correo'],
       rolId: json['rol_id'],
       estatus: json['estatus'],
+      foto: json['foto'],
+      createdAt: json['createdAt'],
+      updatedAt: json['updatedAt'],
     );
   }
 

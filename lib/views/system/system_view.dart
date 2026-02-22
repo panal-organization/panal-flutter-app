@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../controllers/auth_controller.dart';
 import '../../utils/app_colors.dart';
 import '../auth/login_view.dart';
+import 'profile_view.dart';
 
 class SystemView extends StatelessWidget {
   const SystemView({super.key});
@@ -55,7 +56,12 @@ class SystemView extends StatelessWidget {
         _buildSettingsTile(
           icon: Icons.person_outline,
           title: 'Perfil',
-          onTap: () {},
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfileView()),
+            );
+          },
         ),
         _buildSettingsTile(
           icon: Icons.notifications_outlined,

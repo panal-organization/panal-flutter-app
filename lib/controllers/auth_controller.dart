@@ -31,7 +31,7 @@ class AuthController {
         throw Exception(errorBody['message'] ?? 'Error en inicio de sesión');
       }
     } catch (e) {
-      throw Exception(e.toString().replaceAll('Exception: ', ''));
+      throw e.toString().replaceAll('Exception: ', '');
     }
   }
 
