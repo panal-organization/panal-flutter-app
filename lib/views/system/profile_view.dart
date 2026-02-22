@@ -91,8 +91,13 @@ class _ProfileViewState extends State<ProfileView> {
             TextField(
               controller: passController,
               obscureText: true,
+              cursorColor: AppColors.secondaryBase,
               decoration: const InputDecoration(
                 labelText: 'Nueva Contraseña',
+                labelStyle: TextStyle(color: AppColors.secondaryBase),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.secondaryBase),
+                ),
                 border: OutlineInputBorder(),
               ),
             ),
@@ -100,8 +105,13 @@ class _ProfileViewState extends State<ProfileView> {
             TextField(
               controller: confirmPassController,
               obscureText: true,
+              cursorColor: AppColors.secondaryBase,
               decoration: const InputDecoration(
                 labelText: 'Confirmar Contraseña',
+                labelStyle: TextStyle(color: AppColors.secondaryBase),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.secondaryBase),
+                ),
                 border: OutlineInputBorder(),
               ),
             ),
@@ -140,7 +150,7 @@ class _ProfileViewState extends State<ProfileView> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryBase,
+              backgroundColor: AppColors.secondaryBase,
               foregroundColor: Colors.white,
             ),
             child: const Text('Cambiar'),
@@ -175,7 +185,7 @@ class _ProfileViewState extends State<ProfileView> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryBase),
+              child: CircularProgressIndicator(color: AppColors.secondaryBase),
             );
           }
 
@@ -227,7 +237,7 @@ class _ProfileViewState extends State<ProfileView> {
                               ? const Icon(
                                   Icons.person,
                                   size: 60,
-                                  color: AppColors.primaryBase,
+                                  color: AppColors.secondaryBase,
                                 )
                               : null,
                         ),
@@ -240,7 +250,7 @@ class _ProfileViewState extends State<ProfileView> {
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: const BoxDecoration(
-                              color: AppColors.primaryBase,
+                              color: AppColors.secondaryBase,
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -322,7 +332,7 @@ class _ProfileViewState extends State<ProfileView> {
                     icon: const Icon(Icons.lock_outline),
                     label: const Text('Cambiar Contraseña'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryBase,
+                      backgroundColor: AppColors.secondaryBase,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(

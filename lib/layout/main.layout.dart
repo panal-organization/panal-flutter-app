@@ -6,6 +6,7 @@ import 'package:panal_flutter_app/views/services/services_view.dart'; // Import 
 import 'package:panal_flutter_app/views/maintenance/maintenance_view.dart';
 import 'package:panal_flutter_app/views/system/system_view.dart';
 import 'package:panal_flutter_app/utils/app_colors.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -68,24 +69,65 @@ class _MainLayoutState extends State<MainLayout> {
       // Extended body not needed if we want distinct separation, but typical for transparent status bar
       // using standard app bar color
       backgroundColor: AppColors.contentBackground,
-      appBar: AppBar(
-        title: Text(
-          _titles[_currentIndex],
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: AppColors.headerBackground,
-        elevation: 0,
-        // Explicit system overlay style for the app bar
-        systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.dark,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(120), // Increased header height
+        child: AppBar(
+          toolbarHeight: 120,
+          title: Text(
+            _titles[_currentIndex],
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontSize: 24,
+            ),
+          ),
+          centerTitle: true,
+          backgroundColor: AppColors.menuBackground,
+          elevation: 0,
+          flexibleSpace: ClipRRect(
+            child: Stack(
+              children: [
+                // The SVG as the header background
+                SvgPicture.asset(
+                  'assets/app/Hexagon.svg',
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                ),
+                // Overlay for better text readability
+                Container(color: Colors.black.withOpacity(0.2)),
+              ],
+            ),
+          ),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(30),
+              bottomRight: Radius.circular(30),
+            ),
+          ),
+          systemOverlayStyle: const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+          ),
         ),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: IndexedStack(index: _currentIndex, children: _pages),
+      body: Container(
+        color: AppColors.menuBackground, // Seamless with AppBar
+        child: Container(
+          decoration: const BoxDecoration(
+            color: AppColors.contentBackground,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(40),
+              topRight: Radius.circular(40),
+            ),
+          ),
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 0),
+              child: IndexedStack(index: _currentIndex, children: _pages),
+            ),
+          ),
         ),
       ),
       // Custom "Pop-out" Navigation Bar
