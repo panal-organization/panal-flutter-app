@@ -289,6 +289,12 @@ class WorkspacesUsuariosController extends ApiController {
 
   Future<List<WorkspacesUsuarios>> getAll() =>
       get<WorkspacesUsuarios>(endpoint, WorkspacesUsuarios.fromJson);
+
+  Future<List<WorkspacesUsuarios>> getByUserId(String userId) =>
+      get<WorkspacesUsuarios>(
+        '$endpoint?usuario_id=$userId&populate=workspace_id',
+        WorkspacesUsuarios.fromJson,
+      );
   Future<WorkspacesUsuarios?> getOne(String id) =>
       getById<WorkspacesUsuarios>(endpoint, id, WorkspacesUsuarios.fromJson);
   Future<bool> create(WorkspacesUsuarios item) => post(endpoint, item.toJson());

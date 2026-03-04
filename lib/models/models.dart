@@ -455,14 +455,31 @@ class Plantillas {
 class WorkspacesUsuarios {
   String? id;
   String? workspaceId;
+  Workspaces? workspace;
   String? usuarioId;
 
-  WorkspacesUsuarios({this.id, this.workspaceId, this.usuarioId});
+  WorkspacesUsuarios({
+    this.id,
+    this.workspaceId,
+    this.workspace,
+    this.usuarioId,
+  });
 
   factory WorkspacesUsuarios.fromJson(Map<String, dynamic> json) {
+    dynamic wId = json['workspace_id'];
+    String? finalWorkspaceId;
+    Workspaces? workspaceObj;
+    if (wId is Map<String, dynamic>) {
+      finalWorkspaceId = wId['_id'];
+      workspaceObj = Workspaces.fromJson(wId);
+    } else if (wId is String) {
+      finalWorkspaceId = wId;
+    }
+
     return WorkspacesUsuarios(
       id: json['_id'],
-      workspaceId: json['workspace_id'],
+      workspaceId: finalWorkspaceId,
+      workspace: workspaceObj,
       usuarioId: json['usuario_id'],
     );
   }

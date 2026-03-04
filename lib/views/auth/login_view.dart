@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../controllers/auth_controller.dart';
-import '../../layout/main.layout.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'workspace_selection_view.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_toast.dart';
 
@@ -19,6 +21,22 @@ class _LoginViewState extends State<LoginView> {
 
   bool _isLoading = false;
   bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedEmail();
+  }
+
+  Future<void> _loadSavedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedEmail = prefs.getString('user_email');
+    if (savedEmail != null) {
+      setState(() {
+        _emailController.text = savedEmail;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -44,7 +62,7 @@ class _LoginViewState extends State<LoginView> {
 
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const MainLayout()),
+          MaterialPageRoute(builder: (_) => const WorkspaceSelectionView()),
         );
       }
     } catch (e) {

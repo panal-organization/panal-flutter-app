@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../controllers/auth_controller.dart';
 import '../../utils/app_colors.dart';
 import '../auth/login_view.dart';
+import '../auth/workspace_selection_view.dart';
 import 'profile_view.dart';
 
 class SystemView extends StatelessWidget {
@@ -67,6 +68,15 @@ class SystemView extends StatelessWidget {
           icon: Icons.notifications_outlined,
           title: 'Notificaciones',
           onTap: () {},
+        ),
+        _buildSettingsTile(
+          icon: Icons.business_center_outlined,
+          title: 'Cambiar Espacio de Trabajo',
+          onTap: () {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const WorkspaceSelectionView()),
+            );
+          },
         ),
         const SizedBox(height: 30),
         _buildSectionTitle('Sesión'),
