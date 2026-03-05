@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/auth_model.dart';
-import 'app_controllers.dart';
 
 class AuthController {
   // Utilizing the base URL from ApiController or defining it here if it needs to be specific
