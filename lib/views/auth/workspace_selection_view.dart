@@ -181,13 +181,67 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
                                           ),
                                           const SizedBox(width: 20),
                                           Expanded(
-                                            child: Text(
-                                              ws.nombre ?? 'Sin nombre',
-                                              style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w600,
-                                                color: AppColors.textBase,
-                                              ),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  ws.nombre ?? 'Sin nombre',
+                                                  style: const TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.textBase,
+                                                  ),
+                                                ),
+                                                if (wu.usuario?.isPremium ==
+                                                    true) ...[
+                                                  const SizedBox(height: 6),
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 8,
+                                                          vertical: 3,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color:
+                                                          AppColors.warningBg,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            10,
+                                                          ),
+                                                      border: Border.all(
+                                                        color: AppColors
+                                                            .warningBase,
+                                                      ),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: const [
+                                                        Icon(
+                                                          Icons.star_rounded,
+                                                          color: AppColors
+                                                              .warningBase,
+                                                          size: 14,
+                                                        ),
+                                                        SizedBox(width: 4),
+                                                        Text(
+                                                          'Premium',
+                                                          style: TextStyle(
+                                                            fontSize: 10,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: AppColors
+                                                                .warningBase,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
                                             ),
                                           ),
                                           const Icon(

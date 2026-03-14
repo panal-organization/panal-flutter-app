@@ -48,7 +48,57 @@ class _ProfileViewState extends State<ProfileView> {
     return {'user': user, 'role': role};
   }
 
-  Future<void> _pickAndUploadImage(String userId) async {
+  static const String _defaultProfileUrl =
+      'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
+
+  Future<void> _showPhotoOptions(BuildContext context, Usuarios user) async {
+    // Si la foto es nula o igual a la foto por defecto asignada por el backend, actuamos como si fuera nueva.
+    if (user.foto == null || user.foto == _defaultProfileUrl) {
+      _pickAndProcessImage(user.id!, isUpdate: false);
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(
+                Icons.camera_alt,
+                color: AppColors.secondaryBase,
+              ),
+              title: const Text('Actualizar foto'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickAndProcessImage(user.id!, isUpdate: true);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: AppColors.dangerBase),
+              title: const Text(
+                'Eliminar foto',
+                style: TextStyle(color: AppColors.dangerBase),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _deleteImage(user.id!);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickAndProcessImage(
+    String userId, {
+    bool isUpdate = false,
+  }) async {
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
@@ -57,15 +107,44 @@ class _ProfileViewState extends State<ProfileView> {
 
       if (image == null) return;
 
-      _showCustomToast("Subiendo imagen...");
+      _showCustomToast(
+        isUpdate ? "Actualizando imagen..." : "Subiendo imagen...",
+      );
 
-      final success = await _usuariosController.updatePhoto(userId, image.path);
+      final success = isUpdate
+          ? await _usuariosController.updatePhoto(userId, image.path)
+          : await _usuariosController.uploadPhoto(userId, image.path);
 
       if (success) {
-        _showCustomToast("Imagen actualizada correctamente");
+        _showCustomToast(
+          isUpdate
+              ? "Imagen actualizada correctamente"
+              : "Imagen subida correctamente",
+        );
         _refreshProfile();
       } else {
-        _showCustomToast("Error al subir la imagen", isError: true);
+        _showCustomToast(
+          isUpdate
+              ? "Error al actualizar la imagen"
+              : "Error al subir la imagen",
+          isError: true,
+        );
+      }
+    } catch (e) {
+      _showCustomToast("Error: $e", isError: true);
+    }
+  }
+
+  Future<void> _deleteImage(String userId) async {
+    try {
+      _showCustomToast("Eliminando imagen...");
+      // Nota: Asumimos que el backend eliminará la foto al recibir DELETE /upload/:id
+      final success = await _usuariosController.deletePhoto(userId);
+      if (success) {
+        _showCustomToast("Imagen eliminada");
+        _refreshProfile();
+      } else {
+        _showCustomToast("Error al eliminar la imagen", isError: true);
       }
     } catch (e) {
       _showCustomToast("Error: $e", isError: true);
@@ -226,12 +305,9 @@ class _ProfileViewState extends State<ProfileView> {
                         child: CircleAvatar(
                           radius: 60,
                           backgroundColor: AppColors.primaryBg,
-                          backgroundImage: user.foto != null
-                              ? NetworkImage(
-                                  user.foto!.startsWith('http')
-                                      ? user.foto!
-                                      : 'http://3.19.63.85:3000${user.foto!}',
-                                )
+                          backgroundImage:
+                              (user.foto != null && user.foto!.isNotEmpty)
+                              ? NetworkImage(user.foto!)
                               : null,
                           child: user.foto == null
                               ? const Icon(
@@ -246,7 +322,7 @@ class _ProfileViewState extends State<ProfileView> {
                         bottom: 0,
                         right: 0,
                         child: GestureDetector(
-                          onTap: () => _pickAndUploadImage(user.id!),
+                          onTap: () => _showPhotoOptions(context, user),
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: const BoxDecoration(

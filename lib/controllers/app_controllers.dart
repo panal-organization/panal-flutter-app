@@ -103,6 +103,71 @@ class ApiController {
       throw Exception('Error uploading file: $e');
     }
   }
+
+  Future<bool> postMultipart(
+    String endpoint,
+    String fieldName,
+    String filePath, {
+    Map<String, String>? fields,
+  }) async {
+    try {
+      var uri = Uri.parse('$baseUrl/$endpoint');
+
+      var request = http.MultipartRequest('POST', uri);
+
+      if (fields != null) {
+        request.fields.addAll(fields);
+      }
+
+      request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
+
+      var response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        final respStr = await response.stream.bytesToString();
+        print("ERROR UPLOAD PHOTO: $respStr");
+        return false;
+      }
+    } catch (e) {
+      print("Multipart error: $e");
+      return false;
+    }
+  }
+
+  Future<bool> putMultipart(
+    String endpoint,
+    String id,
+    String fieldName,
+    String filePath, {
+    Map<String, String>? fields,
+  }) async {
+    try {
+      var uri = Uri.parse('$baseUrl/$endpoint/$id');
+
+      var request = http.MultipartRequest('PUT', uri);
+
+      if (fields != null) {
+        request.fields.addAll(fields);
+      }
+
+      request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
+
+      var response = await request.send();
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        final respStr = await response.stream.bytesToString();
+        print("ERROR UPDATE PHOTO: $respStr");
+        return false;
+      }
+    } catch (e) {
+      print("Multipart error: $e");
+      return false;
+    }
+  }
 }
 
 // Specific Controllers
@@ -156,8 +221,22 @@ class UsuariosController extends ApiController {
       put(endpoint, id, item.toJson());
   Future<bool> remove(String id) => delete(endpoint, id);
 
-  Future<bool> updatePhoto(String id, String filePath) =>
-      patchMultipart(endpoint, id, 'foto', filePath);
+  Future<bool> uploadPhoto(String id, String filePath) => postMultipart(
+    'upload',
+    'file',
+    filePath,
+    fields: {'usuario_id': id, 'tipo': 'perfil'},
+  );
+
+  Future<bool> updatePhoto(String id, String filePath) => putMultipart(
+    'upload',
+    id,
+    'file',
+    filePath,
+    fields: {'usuario_id': id, 'tipo': 'perfil'},
+  );
+
+  Future<bool> deletePhoto(String id) => delete('upload', id);
 }
 
 class RolesController extends ApiController {
@@ -292,7 +371,7 @@ class WorkspacesUsuariosController extends ApiController {
 
   Future<List<WorkspacesUsuarios>> getByUserId(String userId) =>
       get<WorkspacesUsuarios>(
-        '$endpoint?usuario_id=$userId&populate=workspace_id',
+        '$endpoint?usuario_id=$userId&populate=workspace_id,usuario_id',
         WorkspacesUsuarios.fromJson,
       );
   Future<WorkspacesUsuarios?> getOne(String id) =>

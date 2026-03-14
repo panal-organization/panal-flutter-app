@@ -92,6 +92,15 @@ class Usuarios {
   String? foto;
   String? createdAt;
   String? updatedAt;
+  String? planId;
+
+  bool get isPremium {
+    return planId == '69a3df3381a5be4cb1bd8bc3';
+  }
+
+  bool get isGratuito {
+    return planId == '69a3de4281a5be4cb1bd8bc0';
+  }
 
   Usuarios({
     this.id,
@@ -103,6 +112,7 @@ class Usuarios {
     this.foto,
     this.createdAt,
     this.updatedAt,
+    this.planId,
   });
 
   factory Usuarios.fromJson(Map<String, dynamic> json) {
@@ -116,6 +126,7 @@ class Usuarios {
       foto: json['foto'],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
+      planId: json['plan_id'],
     );
   }
 
@@ -130,6 +141,7 @@ class Usuarios {
       'foto': foto,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'plan_id': planId,
     };
     data.removeWhere((key, value) => value == null);
     return data;
@@ -457,12 +469,14 @@ class WorkspacesUsuarios {
   String? workspaceId;
   Workspaces? workspace;
   String? usuarioId;
+  Usuarios? usuario;
 
   WorkspacesUsuarios({
     this.id,
     this.workspaceId,
     this.workspace,
     this.usuarioId,
+    this.usuario,
   });
 
   factory WorkspacesUsuarios.fromJson(Map<String, dynamic> json) {
@@ -476,11 +490,22 @@ class WorkspacesUsuarios {
       finalWorkspaceId = wId;
     }
 
+    dynamic uId = json['usuario_id'];
+    String? finalUsuarioId;
+    Usuarios? usuarioObj;
+    if (uId is Map<String, dynamic>) {
+      finalUsuarioId = uId['_id'];
+      usuarioObj = Usuarios.fromJson(uId);
+    } else if (uId is String) {
+      finalUsuarioId = uId;
+    }
+
     return WorkspacesUsuarios(
       id: json['_id'],
       workspaceId: finalWorkspaceId,
       workspace: workspaceObj,
-      usuarioId: json['usuario_id'],
+      usuarioId: finalUsuarioId,
+      usuario: usuarioObj,
     );
   }
 
