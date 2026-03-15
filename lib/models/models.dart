@@ -276,6 +276,7 @@ class Modulos {
 class Workspaces {
   String? id;
   String? nombre;
+  String? codigo;
   String? adminId;
   String? createdAt;
   bool? isDeleted;
@@ -283,6 +284,7 @@ class Workspaces {
   Workspaces({
     this.id,
     this.nombre,
+    this.codigo,
     this.adminId,
     this.createdAt,
     this.isDeleted,
@@ -292,6 +294,7 @@ class Workspaces {
     return Workspaces(
       id: json['_id'],
       nombre: json['nombre'],
+      codigo: json['codigo'],
       adminId: json['admin_id'],
       createdAt: json['created_at'],
       isDeleted: json['is_deleted'],
@@ -302,6 +305,7 @@ class Workspaces {
     final Map<String, dynamic> data = {
       '_id': id,
       'nombre': nombre,
+      'codigo': codigo,
       'admin_id': adminId,
       'created_at': createdAt,
       'is_deleted': isDeleted,

@@ -59,6 +59,31 @@ class ApiController {
     }
   }
 
+  Future<T?> postAndReturn<T>(
+    String endpoint,
+    Map<String, dynamic> data,
+    T Function(Map<String, dynamic>) fromJson,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/$endpoint'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(data),
+      );
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final Map<String, dynamic> body = json.decode(response.body);
+        if (body.containsKey('data') && body['data'] is Map<String, dynamic>) {
+          return fromJson(body['data']);
+        }
+        return fromJson(body);
+      } else {
+        throw Exception('Failed to create item: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error creating item: $e');
+    }
+  }
+
   Future<bool> put(
     String endpoint,
     String id,
@@ -309,7 +334,11 @@ class WorkspacesController extends ApiController {
       get<Workspaces>(endpoint, Workspaces.fromJson);
   Future<Workspaces?> getOne(String id) =>
       getById<Workspaces>(endpoint, id, Workspaces.fromJson);
+  Future<List<Workspaces>> getByCode(String code) =>
+      get<Workspaces>('$endpoint?codigo=$code', Workspaces.fromJson);
   Future<bool> create(Workspaces item) => post(endpoint, item.toJson());
+  Future<Workspaces?> createWorkspace(Workspaces item) =>
+      postAndReturn<Workspaces>(endpoint, item.toJson(), Workspaces.fromJson);
   Future<bool> update(String id, Workspaces item) =>
       put(endpoint, id, item.toJson());
   Future<bool> remove(String id) => delete(endpoint, id);
