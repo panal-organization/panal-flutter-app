@@ -640,19 +640,31 @@ class _TicketsTabState extends State<TicketsTab> {
                                 items: const [
                                   DropdownMenuItem(
                                     value: 'BAJA',
-                                    child: Text('BAJA (-)', overflow: TextOverflow.ellipsis),
+                                    child: Text(
+                                      'BAJA (-)',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                   DropdownMenuItem(
                                     value: 'MEDIA',
-                                    child: Text('MEDIA (!)', overflow: TextOverflow.ellipsis),
+                                    child: Text(
+                                      'MEDIA (!)',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                   DropdownMenuItem(
                                     value: 'ALTA',
-                                    child: Text('ALTA (!!)', overflow: TextOverflow.ellipsis),
+                                    child: Text(
+                                      'ALTA (!!)',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                   DropdownMenuItem(
                                     value: 'CRITICA',
-                                    child: Text('CRÍTICA (!!!)', overflow: TextOverflow.ellipsis),
+                                    child: Text(
+                                      'CRÍTICA (!!!)',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                 ],
                                 onChanged: (val) {
@@ -683,19 +695,31 @@ class _TicketsTabState extends State<TicketsTab> {
                                 items: const [
                                   DropdownMenuItem(
                                     value: 'BUG',
-                                    child: Text('Error / Bug', overflow: TextOverflow.ellipsis),
+                                    child: Text(
+                                      'Error / Bug',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                   DropdownMenuItem(
                                     value: 'SOPORTE',
-                                    child: Text('Soporte', overflow: TextOverflow.ellipsis),
+                                    child: Text(
+                                      'Soporte',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                   DropdownMenuItem(
                                     value: 'MEJORA',
-                                    child: Text('Mejora', overflow: TextOverflow.ellipsis),
+                                    child: Text(
+                                      'Mejora',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                   DropdownMenuItem(
                                     value: 'MANTENIMIENTO',
-                                    child: Text('Mantenimiento', overflow: TextOverflow.ellipsis),
+                                    child: Text(
+                                      'Mantenimiento',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                 ],
                                 onChanged: (val) {
@@ -1649,64 +1673,76 @@ class _TicketsTabState extends State<TicketsTab> {
                     ),
                     child: TextField(
                       cursorColor: AppColors.secondaryBase,
-                  onChanged: (val) {
-                    setState(() {
-                      _searchQuery = val;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Buscar tickets...',
-                    hintStyle: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                    prefixIcon: const Icon(Icons.search),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 0,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: Colors.grey.withOpacity(0.2),
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: Colors.grey.withOpacity(0.2),
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: AppColors.secondaryBase,
+                      onChanged: (val) {
+                        setState(() {
+                          _searchQuery = val;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Buscar tickets...',
+                        hintStyle: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                        prefixIcon: const Icon(Icons.search),
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 0,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.grey.withOpacity(0.2),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.grey.withOpacity(0.2),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.secondaryBase,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildFilterChip('TODOS', 'Todos'),
+                        const SizedBox(width: 8),
+                        _buildFilterChip(
+                          'PENDIENTE',
+                          'Pendientes',
+                          color: AppColors.dangerBase,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildFilterChip(
+                          'EN_PROGRESO',
+                          'En Progreso',
+                          color: AppColors.warningBase,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildFilterChip(
+                          'RESUELTO',
+                          'Resueltos',
+                          color: AppColors.successBase,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildFilterChip('TODOS', 'Todos'),
-                    const SizedBox(width: 8),
-                    _buildFilterChip('PENDIENTE', 'Pendientes', color: AppColors.dangerBase),
-                    const SizedBox(width: 8),
-                    _buildFilterChip('EN_PROGRESO', 'En Progreso', color: AppColors.warningBase),
-                    const SizedBox(width: 8),
-                    _buildFilterChip('RESUELTO', 'Resueltos', color: AppColors.successBase),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
+            ),
+          Expanded(
             child: hasTickets
                 ? ListView(
                     padding: const EdgeInsets.only(
