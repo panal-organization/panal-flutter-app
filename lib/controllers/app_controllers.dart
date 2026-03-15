@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 import '../models/models.dart';
 
 class ApiController {
-  static const String baseUrl = 'http://3.19.63.85:3000/api';
+  static const String baseUrl =
+      'https://waggish-unsecludedly-jong.ngrok-free.dev/api';
 
   Future<List<T>> get<T>(
     String endpoint,
@@ -202,12 +203,50 @@ class TicketsController extends ApiController {
   final String endpoint = 'tickets';
 
   Future<List<Tickets>> getAll() => get<Tickets>(endpoint, Tickets.fromJson);
+  Future<List<Tickets>> getByWorkspace(String workspaceId) =>
+      get<Tickets>('$endpoint?workspace_id=$workspaceId', Tickets.fromJson);
   Future<Tickets?> getOne(String id) =>
       getById<Tickets>(endpoint, id, Tickets.fromJson);
   Future<bool> create(Tickets item) => post(endpoint, item.toJson());
   Future<bool> update(String id, Tickets item) =>
       put(endpoint, id, item.toJson());
   Future<bool> remove(String id) => delete(endpoint, id);
+
+  Future<bool> uploadPhoto(String ticketId, String usuarioId, String filePath) async {
+    final url = await uploadPhotoOnly(usuarioId, filePath);
+    if (url != null) {
+      return await update(ticketId, Tickets(foto: url));
+    }
+    return false;
+  }
+
+  Future<String?> uploadPhotoOnly(String usuarioId, String filePath) async {
+    try {
+      var uri = Uri.parse('${ApiController.baseUrl}/upload');
+      var request = http.MultipartRequest('POST', uri);
+      request.fields.addAll({'usuario_id': usuarioId, 'tipo': 'documento'});
+      request.files.add(await http.MultipartFile.fromPath('file', filePath));
+      
+      var response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final respStr = await response.stream.bytesToString();
+        final body = json.decode(respStr);
+        return body['archivo']['url'];
+      } else {
+        final respStr = await response.stream.bytesToString();
+        print("ERROR UPLOAD PHOTO: $respStr");
+        return null;
+      }
+    } catch (e) {
+      print("Multipart error: $e");
+      return null;
+    }
+  }
+
+  Future<bool> deletePhoto(String ticketId) async {
+    return await update(ticketId, Tickets(foto: ''));
+  }
 }
 
 class UsuariosController extends ApiController {
@@ -304,6 +343,8 @@ class OrdenesServicioController extends ApiController {
 
   Future<List<OrdenesServicio>> getAll() =>
       get<OrdenesServicio>(endpoint, OrdenesServicio.fromJson);
+  Future<List<OrdenesServicio>> getByWorkspace(String workspaceId) =>
+      get<OrdenesServicio>('$endpoint?workspace_id=$workspaceId', OrdenesServicio.fromJson);
   Future<OrdenesServicio?> getOne(String id) =>
       getById<OrdenesServicio>(endpoint, id, OrdenesServicio.fromJson);
   Future<bool> create(OrdenesServicio item) => post(endpoint, item.toJson());

@@ -32,51 +32,115 @@ class EstadoOrden {
   }
 }
 
+class Comentario {
+  String? usuarioId;
+  String? comentario;
+  String? fecha;
+
+  Comentario({this.usuarioId, this.comentario, this.fecha});
+
+  factory Comentario.fromJson(Map<String, dynamic> json) {
+    dynamic uId = json['usuario'];
+    String? finalUId;
+    if (uId is Map<String, dynamic>) {
+        finalUId = uId['_id'];
+    } else if (uId is String) {
+        finalUId = uId;
+    }
+
+    return Comentario(
+      usuarioId: finalUId,
+      comentario: json['comentario'],
+      fecha: json['fecha'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {
+      'usuario': usuarioId,
+      'comentario': comentario,
+      'fecha': fecha,
+    };
+    data.removeWhere((key, value) => value == null);
+    return data;
+  }
+}
+
 class Tickets {
   String? id;
+  String? titulo;
+  String? foto;
   String? descripcion;
-  String? estadoId;
+  String? estado;
+  String? prioridad;
+  String? categoria;
   String? createdBy;
   String? createdAt;
   String? updatedAt;
   bool? isDeleted;
   String? workspaceId;
+  List<Comentario>? comentarios;
 
   Tickets({
     this.id,
+    this.titulo,
+    this.foto,
     this.descripcion,
-    this.estadoId,
+    this.estado,
+    this.prioridad,
+    this.categoria,
     this.createdBy,
     this.createdAt,
     this.updatedAt,
     this.isDeleted,
     this.workspaceId,
+    this.comentarios,
   });
 
   factory Tickets.fromJson(Map<String, dynamic> json) {
+    List<Comentario>? comentariosList;
+    if (json['comentarios'] != null) {
+      comentariosList = [];
+      for (var v in json['comentarios']) {
+        comentariosList.add(Comentario.fromJson(v));
+      }
+    }
+
     return Tickets(
       id: json['_id'],
+      titulo: json['titulo'],
+      foto: json['foto'],
       descripcion: json['descripcion'],
-      estadoId: json['estado_id'],
+      estado: json['estado'] ?? json['estado_id'], // fallback gracefully
+      prioridad: json['prioridad'],
+      categoria: json['categoria'],
       createdBy: json['created_by'],
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
       isDeleted: json['is_deleted'],
       workspaceId: json['workspace_id'],
+      comentarios: comentariosList,
     );
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {
       '_id': id,
+      'titulo': titulo,
+      'foto': foto,
       'descripcion': descripcion,
-      'estado_id': estadoId,
+      'estado': estado,
+      'prioridad': prioridad,
+      'categoria': categoria,
       'created_by': createdBy,
       'created_at': createdAt,
       'updated_at': updatedAt,
       'is_deleted': isDeleted,
       'workspace_id': workspaceId,
     };
+    if (comentarios != null) {
+      data['comentarios'] = comentarios!.map((v) => v.toJson()).toList();
+    }
     data.removeWhere((key, value) => value == null);
     return data;
   }
