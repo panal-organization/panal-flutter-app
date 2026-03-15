@@ -23,6 +23,7 @@ class User {
   final String nombre;
   final String correo;
   final String rolId;
+  final String? planId;
   final bool estatus;
   final String? foto;
   final String? createdAt;
@@ -33,6 +34,7 @@ class User {
     required this.nombre,
     required this.correo,
     required this.rolId,
+    this.planId,
     required this.estatus,
     this.foto,
     this.createdAt,
@@ -45,6 +47,7 @@ class User {
       nombre: json['nombre'],
       correo: json['correo'],
       rolId: json['rol_id'],
+      planId: json['plan_id'],
       estatus: json['estatus'],
       foto: json['foto'],
       createdAt: json['createdAt'],

@@ -46,6 +46,9 @@ class AuthController {
     await prefs.setString('user_name', authResponse.user.nombre);
     await prefs.setString('user_email', authResponse.user.correo);
     await prefs.setString('user_role', authResponse.user.rolId);
+    if (authResponse.user.planId != null) {
+      await prefs.setString('user_plan', authResponse.user.planId!);
+    }
   }
 
   Future<void> signOut() async {

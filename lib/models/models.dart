@@ -278,6 +278,7 @@ class Workspaces {
   String? nombre;
   String? codigo;
   String? adminId;
+  String? planId;
   String? createdAt;
   bool? isDeleted;
 
@@ -286,6 +287,7 @@ class Workspaces {
     this.nombre,
     this.codigo,
     this.adminId,
+    this.planId,
     this.createdAt,
     this.isDeleted,
   });
@@ -296,6 +298,7 @@ class Workspaces {
       nombre: json['nombre'],
       codigo: json['codigo'],
       adminId: json['admin_id'],
+      planId: json['plan_id'],
       createdAt: json['created_at'],
       isDeleted: json['is_deleted'],
     );
@@ -307,6 +310,7 @@ class Workspaces {
       'nombre': nombre,
       'codigo': codigo,
       'admin_id': adminId,
+      'plan_id': planId,
       'created_at': createdAt,
       'is_deleted': isDeleted,
     };

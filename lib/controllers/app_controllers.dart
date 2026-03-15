@@ -1,17 +1,31 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 
 class ApiController {
   static const String baseUrl =
       'https://waggish-unsecludedly-jong.ngrok-free.dev/api';
 
+  Future<Map<String, String>> _headers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
   Future<List<T>> get<T>(
     String endpoint,
     T Function(Map<String, dynamic>) fromJson,
   ) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/$endpoint'));
+      final headers = await _headers();
+      final response = await http.get(
+        Uri.parse('$baseUrl/$endpoint'),
+        headers: headers,
+      );
       if (response.statusCode == 200) {
         final dynamic body = json.decode(response.body);
         if (body is List) {
@@ -35,7 +49,11 @@ class ApiController {
     T Function(Map<String, dynamic>) fromJson,
   ) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/$endpoint/$id'));
+      final headers = await _headers();
+      final response = await http.get(
+        Uri.parse('$baseUrl/$endpoint/$id'),
+        headers: headers,
+      );
       if (response.statusCode == 200) {
         return fromJson(json.decode(response.body));
       } else {
@@ -48,9 +66,10 @@ class ApiController {
 
   Future<bool> post(String endpoint, Map<String, dynamic> data) async {
     try {
+      final headers = await _headers();
       final response = await http.post(
         Uri.parse('$baseUrl/$endpoint'),
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
         body: json.encode(data),
       );
       return response.statusCode == 201 || response.statusCode == 200;
@@ -65,9 +84,10 @@ class ApiController {
     T Function(Map<String, dynamic>) fromJson,
   ) async {
     try {
+      final headers = await _headers();
       final response = await http.post(
         Uri.parse('$baseUrl/$endpoint'),
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
         body: json.encode(data),
       );
       if (response.statusCode == 201 || response.statusCode == 200) {
@@ -90,9 +110,10 @@ class ApiController {
     Map<String, dynamic> data,
   ) async {
     try {
+      final headers = await _headers();
       final response = await http.put(
         Uri.parse('$baseUrl/$endpoint/$id'),
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
         body: json.encode(data),
       );
       return response.statusCode == 200;
@@ -103,7 +124,11 @@ class ApiController {
 
   Future<bool> delete(String endpoint, String id) async {
     try {
-      final response = await http.delete(Uri.parse('$baseUrl/$endpoint/$id'));
+      final headers = await _headers();
+      final response = await http.delete(
+        Uri.parse('$baseUrl/$endpoint/$id'),
+        headers: headers,
+      );
       return response.statusCode == 200;
     } catch (e) {
       throw Exception('Error deleting data: $e');
@@ -342,10 +367,36 @@ class WorkspacesController extends ApiController {
   Future<bool> update(String id, Workspaces item) =>
       put(endpoint, id, item.toJson());
   Future<bool> remove(String id) => delete(endpoint, id);
+
+  Future<bool> joinByCode(String userId, String code) async {
+    try {
+      final headers = await _headers();
+      final response = await http.post(
+        Uri.parse('${ApiController.baseUrl}/$endpoint/join-by-code'),
+        headers: headers,
+        body: json.encode({
+          'usuario_id': userId,
+          'codigo': code,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 400) {
+        throw Exception('Ya eres miembro de este espacio o hay un error en la solicitud');
+      } else if (response.statusCode == 404) {
+        throw Exception('Código de espacio no encontrado');
+      } else {
+        throw Exception('Error al unirse al espacio: ${response.statusCode}');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
 
 class PlanController extends ApiController {
-  final String endpoint = 'plan';
+  final String endpoint = 'plans';
 
   Future<List<Plan>> getAll() => get<Plan>(endpoint, Plan.fromJson);
   Future<Plan?> getOne(String id) => getById<Plan>(endpoint, id, Plan.fromJson);
