@@ -437,6 +437,8 @@ class AlmacenController extends ApiController {
   final String endpoint = 'almacen';
 
   Future<List<Almacen>> getAll() => get<Almacen>(endpoint, Almacen.fromJson);
+  Future<List<Almacen>> getByWorkspace(String workspaceId) =>
+      get<Almacen>('$endpoint?workspace_id=$workspaceId', Almacen.fromJson);
   Future<Almacen?> getOne(String id) =>
       getById<Almacen>(endpoint, id, Almacen.fromJson);
   Future<bool> create(Almacen item) => post(endpoint, item.toJson());
