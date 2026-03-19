@@ -1,16 +1,31 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 
 class ApiController {
-  static const String baseUrl = 'http://3.19.63.85:3000/api';
+  static const String baseUrl =
+      'https://waggish-unsecludedly-jong.ngrok-free.dev/api';
+
+  Future<Map<String, String>> _headers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
 
   Future<List<T>> get<T>(
     String endpoint,
     T Function(Map<String, dynamic>) fromJson,
   ) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/$endpoint'));
+      final headers = await _headers();
+      final response = await http.get(
+        Uri.parse('$baseUrl/$endpoint'),
+        headers: headers,
+      );
       if (response.statusCode == 200) {
         final dynamic body = json.decode(response.body);
         if (body is List) {
@@ -34,7 +49,11 @@ class ApiController {
     T Function(Map<String, dynamic>) fromJson,
   ) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/$endpoint/$id'));
+      final headers = await _headers();
+      final response = await http.get(
+        Uri.parse('$baseUrl/$endpoint/$id'),
+        headers: headers,
+      );
       if (response.statusCode == 200) {
         return fromJson(json.decode(response.body));
       } else {
@@ -47,14 +66,41 @@ class ApiController {
 
   Future<bool> post(String endpoint, Map<String, dynamic> data) async {
     try {
+      final headers = await _headers();
       final response = await http.post(
         Uri.parse('$baseUrl/$endpoint'),
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
         body: json.encode(data),
       );
       return response.statusCode == 201 || response.statusCode == 200;
     } catch (e) {
       throw Exception('Error creating data: $e');
+    }
+  }
+
+  Future<T?> postAndReturn<T>(
+    String endpoint,
+    Map<String, dynamic> data,
+    T Function(Map<String, dynamic>) fromJson,
+  ) async {
+    try {
+      final headers = await _headers();
+      final response = await http.post(
+        Uri.parse('$baseUrl/$endpoint'),
+        headers: headers,
+        body: json.encode(data),
+      );
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final Map<String, dynamic> body = json.decode(response.body);
+        if (body.containsKey('data') && body['data'] is Map<String, dynamic>) {
+          return fromJson(body['data']);
+        }
+        return fromJson(body);
+      } else {
+        throw Exception('Failed to create item: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error creating item: $e');
     }
   }
 
@@ -64,9 +110,10 @@ class ApiController {
     Map<String, dynamic> data,
   ) async {
     try {
+      final headers = await _headers();
       final response = await http.put(
         Uri.parse('$baseUrl/$endpoint/$id'),
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
         body: json.encode(data),
       );
       return response.statusCode == 200;
@@ -77,7 +124,11 @@ class ApiController {
 
   Future<bool> delete(String endpoint, String id) async {
     try {
-      final response = await http.delete(Uri.parse('$baseUrl/$endpoint/$id'));
+      final headers = await _headers();
+      final response = await http.delete(
+        Uri.parse('$baseUrl/$endpoint/$id'),
+        headers: headers,
+      );
       return response.statusCode == 200;
     } catch (e) {
       throw Exception('Error deleting data: $e');
@@ -202,12 +253,50 @@ class TicketsController extends ApiController {
   final String endpoint = 'tickets';
 
   Future<List<Tickets>> getAll() => get<Tickets>(endpoint, Tickets.fromJson);
+  Future<List<Tickets>> getByWorkspace(String workspaceId) =>
+      get<Tickets>('$endpoint?workspace_id=$workspaceId', Tickets.fromJson);
   Future<Tickets?> getOne(String id) =>
       getById<Tickets>(endpoint, id, Tickets.fromJson);
   Future<bool> create(Tickets item) => post(endpoint, item.toJson());
   Future<bool> update(String id, Tickets item) =>
       put(endpoint, id, item.toJson());
   Future<bool> remove(String id) => delete(endpoint, id);
+
+  Future<bool> uploadPhoto(String ticketId, String usuarioId, String filePath) async {
+    final url = await uploadPhotoOnly(usuarioId, filePath);
+    if (url != null) {
+      return await update(ticketId, Tickets(foto: url));
+    }
+    return false;
+  }
+
+  Future<String?> uploadPhotoOnly(String usuarioId, String filePath) async {
+    try {
+      var uri = Uri.parse('${ApiController.baseUrl}/upload');
+      var request = http.MultipartRequest('POST', uri);
+      request.fields.addAll({'usuario_id': usuarioId, 'tipo': 'documento'});
+      request.files.add(await http.MultipartFile.fromPath('file', filePath));
+      
+      var response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final respStr = await response.stream.bytesToString();
+        final body = json.decode(respStr);
+        return body['archivo']['url'];
+      } else {
+        final respStr = await response.stream.bytesToString();
+        print("ERROR UPLOAD PHOTO: $respStr");
+        return null;
+      }
+    } catch (e) {
+      print("Multipart error: $e");
+      return null;
+    }
+  }
+
+  Future<bool> deletePhoto(String ticketId) async {
+    return await update(ticketId, Tickets(foto: ''));
+  }
 }
 
 class UsuariosController extends ApiController {
@@ -270,14 +359,44 @@ class WorkspacesController extends ApiController {
       get<Workspaces>(endpoint, Workspaces.fromJson);
   Future<Workspaces?> getOne(String id) =>
       getById<Workspaces>(endpoint, id, Workspaces.fromJson);
+  Future<List<Workspaces>> getByCode(String code) =>
+      get<Workspaces>('$endpoint?codigo=$code', Workspaces.fromJson);
   Future<bool> create(Workspaces item) => post(endpoint, item.toJson());
+  Future<Workspaces?> createWorkspace(Workspaces item) =>
+      postAndReturn<Workspaces>(endpoint, item.toJson(), Workspaces.fromJson);
   Future<bool> update(String id, Workspaces item) =>
       put(endpoint, id, item.toJson());
   Future<bool> remove(String id) => delete(endpoint, id);
+
+  Future<bool> joinByCode(String userId, String code) async {
+    try {
+      final headers = await _headers();
+      final response = await http.post(
+        Uri.parse('${ApiController.baseUrl}/$endpoint/join-by-code'),
+        headers: headers,
+        body: json.encode({
+          'usuario_id': userId,
+          'codigo': code,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 400) {
+        throw Exception('Ya eres miembro de este espacio o hay un error en la solicitud');
+      } else if (response.statusCode == 404) {
+        throw Exception('Código de espacio no encontrado');
+      } else {
+        throw Exception('Error al unirse al espacio: ${response.statusCode}');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
 
 class PlanController extends ApiController {
-  final String endpoint = 'plan';
+  final String endpoint = 'plans';
 
   Future<List<Plan>> getAll() => get<Plan>(endpoint, Plan.fromJson);
   Future<Plan?> getOne(String id) => getById<Plan>(endpoint, id, Plan.fromJson);
@@ -304,6 +423,8 @@ class OrdenesServicioController extends ApiController {
 
   Future<List<OrdenesServicio>> getAll() =>
       get<OrdenesServicio>(endpoint, OrdenesServicio.fromJson);
+  Future<List<OrdenesServicio>> getByWorkspace(String workspaceId) =>
+      get<OrdenesServicio>('$endpoint?workspace_id=$workspaceId', OrdenesServicio.fromJson);
   Future<OrdenesServicio?> getOne(String id) =>
       getById<OrdenesServicio>(endpoint, id, OrdenesServicio.fromJson);
   Future<bool> create(OrdenesServicio item) => post(endpoint, item.toJson());
@@ -316,6 +437,8 @@ class AlmacenController extends ApiController {
   final String endpoint = 'almacen';
 
   Future<List<Almacen>> getAll() => get<Almacen>(endpoint, Almacen.fromJson);
+  Future<List<Almacen>> getByWorkspace(String workspaceId) =>
+      get<Almacen>('$endpoint?workspace_id=$workspaceId', Almacen.fromJson);
   Future<Almacen?> getOne(String id) =>
       getById<Almacen>(endpoint, id, Almacen.fromJson);
   Future<bool> create(Almacen item) => post(endpoint, item.toJson());

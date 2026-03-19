@@ -6,9 +6,11 @@ import '../models/auth_model.dart';
 class AuthController {
   // Utilizing the base URL from ApiController or defining it here if it needs to be specific
   // ApiController.baseUrl is 'http://3.19.63.85:3000/api'
+  // https://waggish-unsecludedly-jong.ngrok-free.dev
   // Endpoint requested is POST /api/auth/sign-in
 
-  static const String _baseUrl = 'http://3.19.63.85:3000/api';
+  static const String _baseUrl =
+      'https://waggish-unsecludedly-jong.ngrok-free.dev/api';
 
   Future<AuthResponse> signIn(String correo, String contrasena) async {
     try {
@@ -44,6 +46,9 @@ class AuthController {
     await prefs.setString('user_name', authResponse.user.nombre);
     await prefs.setString('user_email', authResponse.user.correo);
     await prefs.setString('user_role', authResponse.user.rolId);
+    if (authResponse.user.planId != null) {
+      await prefs.setString('user_plan', authResponse.user.planId!);
+    }
   }
 
   Future<void> signOut() async {
