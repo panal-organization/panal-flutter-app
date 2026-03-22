@@ -72,7 +72,9 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
             _workspaces = list;
             // Inferir el plan del usuario si no está en SharedPreferences
             if (_userPlanId == null && list.isNotEmpty) {
-              final personalWs = list.where((wu) => wu.workspace?.adminId == _userId).firstOrNull;
+              final personalWs = list
+                  .where((wu) => wu.workspace?.adminId == _userId)
+                  .firstOrNull;
               if (personalWs != null) {
                 _userPlanId = personalWs.workspace?.planId;
               }
@@ -259,22 +261,17 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
                                                       color: AppColors
                                                           .secondaryBase,
                                                     ),
-                                                    const SizedBox(
-                                                      width: 4,
-                                                    ),
+                                                    const SizedBox(width: 4),
                                                     Text(
                                                       'Código: ${ws.codigo}',
-                                                      style:
-                                                          const TextStyle(
+                                                      style: const TextStyle(
                                                         fontSize: 13,
                                                         color: Colors.grey,
                                                         fontWeight:
                                                             FontWeight.w500,
                                                       ),
                                                     ),
-                                                    const SizedBox(
-                                                      width: 4,
-                                                    ),
+                                                    const SizedBox(width: 4),
                                                     const Icon(
                                                       Icons.copy_rounded,
                                                       size: 14,
@@ -312,7 +309,8 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
                                                       children: const [
                                                         Icon(
                                                           Icons.star_rounded,
-                                                          color: AppColors.warningBase,
+                                                          color: AppColors
+                                                              .warningBase,
                                                           size: 12,
                                                         ),
                                                         SizedBox(width: 4),
@@ -320,15 +318,18 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
                                                           'Premium',
                                                           style: TextStyle(
                                                             fontSize: 10,
-                                                            fontWeight: FontWeight.w600,
-                                                            color: AppColors.warningBase,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: AppColors
+                                                                .warningBase,
                                                           ),
                                                         ),
                                                       ],
                                                     ),
                                                   ),
                                                   const SizedBox(width: 8),
-                                                ] else if (ws.adminId == _userId) ...[
+                                                ] else if (ws.adminId ==
+                                                    _userId) ...[
                                                   Container(
                                                     padding:
                                                         const EdgeInsets.symmetric(
@@ -350,7 +351,8 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
                                                       children: const [
                                                         Icon(
                                                           Icons.person_rounded,
-                                                          color: AppColors.secondaryBase,
+                                                          color: AppColors
+                                                              .secondaryBase,
                                                           size: 12,
                                                         ),
                                                         SizedBox(width: 4),
@@ -358,8 +360,10 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
                                                           'Personal',
                                                           style: TextStyle(
                                                             fontSize: 10,
-                                                            fontWeight: FontWeight.w600,
-                                                            color: AppColors.secondaryBase,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: AppColors
+                                                                .secondaryBase,
                                                           ),
                                                         ),
                                                       ],
@@ -461,12 +465,14 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
               },
             ),
             ListTile(
-              enabled: _userPlanId == _premiumPlanId ||
+              enabled:
+                  _userPlanId == _premiumPlanId ||
                   _userPlanId == '69a3df3381a5be4cb1bd8bc3',
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: (_userPlanId == _premiumPlanId ||
+                  color:
+                      (_userPlanId == _premiumPlanId ||
                           _userPlanId == '69a3df3381a5be4cb1bd8bc3')
                       ? AppColors.secondaryBase.withOpacity(0.1)
                       : Colors.grey.withOpacity(0.1),
@@ -474,7 +480,8 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
                 ),
                 child: Icon(
                   Icons.add_business_rounded,
-                  color: (_userPlanId == _premiumPlanId ||
+                  color:
+                      (_userPlanId == _premiumPlanId ||
                           _userPlanId == '69a3df3381a5be4cb1bd8bc3')
                       ? AppColors.secondaryBase
                       : Colors.grey,
@@ -484,7 +491,8 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
                 'Crear un nuevo espacio',
                 style: TextStyle(
                   fontWeight: FontWeight.w500,
-                  color: (_userPlanId == _premiumPlanId ||
+                  color:
+                      (_userPlanId == _premiumPlanId ||
                           _userPlanId == '69a3df3381a5be4cb1bd8bc3')
                       ? AppColors.textBase
                       : Colors.grey,
@@ -496,7 +504,8 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
                     ? 'Conviértete en el administrador'
                     : 'Disponible solo en Plan Premium',
                 style: TextStyle(
-                  color: (_userPlanId == _premiumPlanId ||
+                  color:
+                      (_userPlanId == _premiumPlanId ||
                           _userPlanId == '69a3df3381a5be4cb1bd8bc3')
                       ? Colors.grey
                       : Colors.red.shade300,
@@ -540,7 +549,7 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
             content: TextField(
               controller: codeController,
               decoration: InputDecoration(
-                labelText: 'Código del espacio',
+                labelText: 'Código del espacio de trabajo',
                 labelStyle: const TextStyle(fontSize: 14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -629,7 +638,7 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
             content: TextField(
               controller: nameController,
               decoration: InputDecoration(
-                labelText: 'Nombre del espacio',
+                labelText: 'Nombre del espacio de trabajo',
                 labelStyle: const TextStyle(fontSize: 14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
