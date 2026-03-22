@@ -454,24 +454,52 @@ class Almacen {
 
 class Articulos {
   String? id;
+  String? foto;
   String? nombre;
+  String? descripcion;
+  String? almacenId;
   String? workspaceId;
+  bool? estatus;
+  String? createdAt;
+  String? updatedAt;
 
-  Articulos({this.id, this.nombre, this.workspaceId});
+  Articulos({
+    this.id,
+    this.foto,
+    this.nombre,
+    this.descripcion,
+    this.almacenId,
+    this.workspaceId,
+    this.estatus,
+    this.createdAt,
+    this.updatedAt,
+  });
 
   factory Articulos.fromJson(Map<String, dynamic> json) {
     return Articulos(
       id: json['_id'],
+      foto: json['foto'],
       nombre: json['nombre'],
+      descripcion: json['descripcion'],
+      almacenId: json['almacen_id'],
       workspaceId: json['workspace_id'],
+      estatus: json['estatus'],
+      createdAt: json['createdAt'],
+      updatedAt: json['updatedAt'],
     );
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {
       '_id': id,
+      'foto': foto,
       'nombre': nombre,
+      'descripcion': descripcion,
+      'almacen_id': almacenId,
       'workspace_id': workspaceId,
+      'estatus': estatus,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
     };
     data.removeWhere((key, value) => value == null);
     return data;

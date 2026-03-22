@@ -452,12 +452,52 @@ class ArticulosController extends ApiController {
 
   Future<List<Articulos>> getAll() =>
       get<Articulos>(endpoint, Articulos.fromJson);
+  Future<List<Articulos>> getByAlmacen(String almacenId) =>
+      get<Articulos>('$endpoint?almacen_id=$almacenId', Articulos.fromJson);
+  Future<List<Articulos>> getByAlmacenWithStatus(String almacenId, bool active) =>
+      get<Articulos>('$endpoint?almacen_id=$almacenId&estatus=$active', Articulos.fromJson);
   Future<Articulos?> getOne(String id) =>
       getById<Articulos>(endpoint, id, Articulos.fromJson);
   Future<bool> create(Articulos item) => post(endpoint, item.toJson());
   Future<bool> update(String id, Articulos item) =>
       put(endpoint, id, item.toJson());
   Future<bool> remove(String id) => delete(endpoint, id);
+
+  Future<bool> uploadPhoto(String articuloId, String usuarioId, String filePath) async {
+    final url = await uploadPhotoOnly(usuarioId, filePath);
+    if (url != null) {
+      return await update(articuloId, Articulos(foto: url));
+    }
+    return false;
+  }
+
+  Future<String?> uploadPhotoOnly(String usuarioId, String filePath) async {
+    try {
+      var uri = Uri.parse('${ApiController.baseUrl}/upload');
+      var request = http.MultipartRequest('POST', uri);
+      request.fields.addAll({'usuario_id': usuarioId, 'tipo': 'documento'});
+      request.files.add(await http.MultipartFile.fromPath('file', filePath));
+      
+      var response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final respStr = await response.stream.bytesToString();
+        final body = json.decode(respStr);
+        return body['archivo']['url'];
+      } else {
+        final respStr = await response.stream.bytesToString();
+        print("ERROR UPLOAD ARTICULO PHOTO: $respStr");
+        return null;
+      }
+    } catch (e) {
+      print("Multipart error articles: $e");
+      return null;
+    }
+  }
+
+  Future<bool> deletePhoto(String articuloId) async {
+    return await update(articuloId, Articulos(foto: ''));
+  }
 }
 
 class PropiedadesController extends ApiController {
