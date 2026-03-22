@@ -262,7 +262,11 @@ class TicketsController extends ApiController {
       put(endpoint, id, item.toJson());
   Future<bool> remove(String id) => delete(endpoint, id);
 
-  Future<bool> uploadPhoto(String ticketId, String usuarioId, String filePath) async {
+  Future<bool> uploadPhoto(
+    String ticketId,
+    String usuarioId,
+    String filePath,
+  ) async {
     final url = await uploadPhotoOnly(usuarioId, filePath);
     if (url != null) {
       return await update(ticketId, Tickets(foto: url));
@@ -276,7 +280,7 @@ class TicketsController extends ApiController {
       var request = http.MultipartRequest('POST', uri);
       request.fields.addAll({'usuario_id': usuarioId, 'tipo': 'documento'});
       request.files.add(await http.MultipartFile.fromPath('file', filePath));
-      
+
       var response = await request.send();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -374,16 +378,15 @@ class WorkspacesController extends ApiController {
       final response = await http.post(
         Uri.parse('${ApiController.baseUrl}/$endpoint/join-by-code'),
         headers: headers,
-        body: json.encode({
-          'usuario_id': userId,
-          'codigo': code,
-        }),
+        body: json.encode({'usuario_id': userId, 'codigo': code}),
       );
 
       if (response.statusCode == 200) {
         return true;
       } else if (response.statusCode == 400) {
-        throw Exception('Ya eres miembro de este espacio o hay un error en la solicitud');
+        throw Exception(
+          'Ya eres miembro de este espacio o hay un error en la solicitud',
+        );
       } else if (response.statusCode == 404) {
         throw Exception('Código de espacio no encontrado');
       } else {
@@ -424,13 +427,36 @@ class OrdenesServicioController extends ApiController {
   Future<List<OrdenesServicio>> getAll() =>
       get<OrdenesServicio>(endpoint, OrdenesServicio.fromJson);
   Future<List<OrdenesServicio>> getByWorkspace(String workspaceId) =>
-      get<OrdenesServicio>('$endpoint?workspace_id=$workspaceId', OrdenesServicio.fromJson);
+      get<OrdenesServicio>(
+        '$endpoint?workspace_id=$workspaceId&populate=created_by,articulo_id',
+        OrdenesServicio.fromJson,
+      );
   Future<OrdenesServicio?> getOne(String id) =>
       getById<OrdenesServicio>(endpoint, id, OrdenesServicio.fromJson);
   Future<bool> create(OrdenesServicio item) => post(endpoint, item.toJson());
   Future<bool> update(String id, OrdenesServicio item) =>
       put(endpoint, id, item.toJson());
   Future<bool> remove(String id) => delete(endpoint, id);
+  Future<String?> uploadPhotoOnly(String usuarioId, String filePath) async {
+    try {
+      var uri = Uri.parse('${ApiController.baseUrl}/upload');
+      var request = http.MultipartRequest('POST', uri);
+      request.fields.addAll({'usuario_id': usuarioId, 'tipo': 'documento'});
+      request.files.add(await http.MultipartFile.fromPath('file', filePath));
+
+      var response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final respStr = await response.stream.bytesToString();
+        final body = json.decode(respStr);
+        return body['archivo']['url'];
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
 }
 
 class AlmacenController extends ApiController {
@@ -452,12 +478,63 @@ class ArticulosController extends ApiController {
 
   Future<List<Articulos>> getAll() =>
       get<Articulos>(endpoint, Articulos.fromJson);
+  Future<List<Articulos>> getByAlmacen(String almacenId) =>
+      get<Articulos>('$endpoint?almacen_id=$almacenId', Articulos.fromJson);
+  Future<List<Articulos>> getByWorkspace(String workspaceId) =>
+      get<Articulos>('$endpoint?workspace_id=$workspaceId', Articulos.fromJson);
+  Future<List<Articulos>> getByAlmacenWithStatus(
+    String almacenId,
+    bool active,
+  ) => get<Articulos>(
+    '$endpoint?almacen_id=$almacenId&estatus=$active',
+    Articulos.fromJson,
+  );
   Future<Articulos?> getOne(String id) =>
       getById<Articulos>(endpoint, id, Articulos.fromJson);
   Future<bool> create(Articulos item) => post(endpoint, item.toJson());
   Future<bool> update(String id, Articulos item) =>
       put(endpoint, id, item.toJson());
   Future<bool> remove(String id) => delete(endpoint, id);
+
+  Future<bool> uploadPhoto(
+    String articuloId,
+    String usuarioId,
+    String filePath,
+  ) async {
+    final url = await uploadPhotoOnly(usuarioId, filePath);
+    if (url != null) {
+      return await update(articuloId, Articulos(foto: url));
+    }
+    return false;
+  }
+
+  Future<String?> uploadPhotoOnly(String usuarioId, String filePath) async {
+    try {
+      var uri = Uri.parse('${ApiController.baseUrl}/upload');
+      var request = http.MultipartRequest('POST', uri);
+      request.fields.addAll({'usuario_id': usuarioId, 'tipo': 'documento'});
+      request.files.add(await http.MultipartFile.fromPath('file', filePath));
+
+      var response = await request.send();
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final respStr = await response.stream.bytesToString();
+        final body = json.decode(respStr);
+        return body['archivo']['url'];
+      } else {
+        final respStr = await response.stream.bytesToString();
+        print("ERROR UPLOAD ARTICULO PHOTO: $respStr");
+        return null;
+      }
+    } catch (e) {
+      print("Multipart error articles: $e");
+      return null;
+    }
+  }
+
+  Future<bool> deletePhoto(String articuloId) async {
+    return await update(articuloId, Articulos(foto: ''));
+  }
 }
 
 class PropiedadesController extends ApiController {
@@ -495,6 +572,11 @@ class WorkspacesUsuariosController extends ApiController {
   Future<List<WorkspacesUsuarios>> getByUserId(String userId) =>
       get<WorkspacesUsuarios>(
         '$endpoint?usuario_id=$userId&populate=workspace_id,usuario_id',
+        WorkspacesUsuarios.fromJson,
+      );
+  Future<List<WorkspacesUsuarios>> getByWorkspaceId(String workspaceId) =>
+      get<WorkspacesUsuarios>(
+        '$endpoint?workspace_id=$workspaceId&populate=usuario_id',
         WorkspacesUsuarios.fromJson,
       );
   Future<WorkspacesUsuarios?> getOne(String id) =>

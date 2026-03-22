@@ -4,6 +4,7 @@ import '../../controllers/app_controllers.dart';
 import '../../models/models.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_toast.dart';
+import 'warehouse_detail_view.dart';
 
 class WarehouseView extends StatefulWidget {
   const WarehouseView({super.key});
@@ -32,7 +33,9 @@ class _WarehouseViewState extends State<WarehouseView> {
       _workspaceId = prefs.getString('selected_workspace_id');
 
       if (_workspaceId != null) {
-        final almacenes = await _almacenController.getByWorkspace(_workspaceId!);
+        final almacenes = await _almacenController.getByWorkspace(
+          _workspaceId!,
+        );
         if (mounted) {
           setState(() {
             _almacenes = almacenes;
@@ -72,26 +75,26 @@ class _WarehouseViewState extends State<WarehouseView> {
                       ),
                     )
                   : _almacenes.isEmpty
-                      ? _buildEmptyState()
-                      : ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.only(
-                            top: 10,
-                            bottom: 100, // Space for FAB
-                            left: 4,
-                            right: 4,
-                          ),
-                          itemCount: _almacenes.length,
-                          itemBuilder: (context, index) {
-                            return _buildWarehouseCard(_almacenes[index]);
-                          },
-                        ),
+                  ? _buildEmptyState()
+                  : ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.only(
+                        top: 10,
+                        bottom: 100, // Space for FAB
+                        left: 4,
+                        right: 4,
+                      ),
+                      itemCount: _almacenes.length,
+                      itemBuilder: (context, index) {
+                        return _buildWarehouseCard(_almacenes[index]);
+                      },
+                    ),
             ),
           ),
         ],
       ),
       floatingActionButton: SizedBox(
-        height: 44,
+        height: 40,
         child: FloatingActionButton.extended(
           onPressed: _showCreateWarehouseDialog,
           backgroundColor: AppColors.secondaryBase,
@@ -165,9 +168,14 @@ class _WarehouseViewState extends State<WarehouseView> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            // Navigate to articles view (Placeholder)
-            AppToast.show(context, 'Navegando a: ${warehouse.nombre}');
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => WarehouseDetailView(warehouse: warehouse),
+              ),
+            );
+            _loadAlmacenes();
           },
           borderRadius: BorderRadius.circular(20),
           child: Padding(
@@ -342,15 +350,18 @@ class _WarehouseViewState extends State<WarehouseView> {
                       child: GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 6,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
-                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 6,
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 8,
+                            ),
                         itemCount: iconsAvailable.length,
                         itemBuilder: (context, index) {
                           String key = iconsAvailable.keys.elementAt(index);
-                          IconData iconData = iconsAvailable.values.elementAt(index);
+                          IconData iconData = iconsAvailable.values.elementAt(
+                            index,
+                          );
                           return _buildIconOption(
                             iconData,
                             key,
@@ -456,7 +467,9 @@ class _WarehouseViewState extends State<WarehouseView> {
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.secondaryBase : Colors.grey.withOpacity(0.2),
+            color: isSelected
+                ? AppColors.secondaryBase
+                : Colors.grey.withOpacity(0.2),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -471,23 +484,40 @@ class _WarehouseViewState extends State<WarehouseView> {
 
   IconData _getIconData(String? iconName) {
     switch (iconName) {
-      case 'inventory': return Icons.inventory_2_outlined;
-      case 'archive': return Icons.archive_outlined;
-      case 'category': return Icons.category_outlined;
-      case 'storage': return Icons.storage_outlined;
-      case 'shipping': return Icons.local_shipping_outlined;
-      case 'computer': return Icons.computer_outlined;
-      case 'laptop': return Icons.laptop_mac_outlined;
-      case 'router': return Icons.router_outlined;
-      case 'mobile': return Icons.smartphone_outlined;
-      case 'print': return Icons.print_outlined;
-      case 'memory': return Icons.memory_outlined;
-      case 'settings': return Icons.settings_suggest_outlined;
-      case 'construction': return Icons.construction_outlined;
-      case 'factory': return Icons.factory_outlined;
-      case 'widgets': return Icons.widgets_outlined;
-      case 'science': return Icons.science_outlined;
-      default: return Icons.home_repair_service_outlined;
+      case 'inventory':
+        return Icons.inventory_2_outlined;
+      case 'archive':
+        return Icons.archive_outlined;
+      case 'category':
+        return Icons.category_outlined;
+      case 'storage':
+        return Icons.storage_outlined;
+      case 'shipping':
+        return Icons.local_shipping_outlined;
+      case 'computer':
+        return Icons.computer_outlined;
+      case 'laptop':
+        return Icons.laptop_mac_outlined;
+      case 'router':
+        return Icons.router_outlined;
+      case 'mobile':
+        return Icons.smartphone_outlined;
+      case 'print':
+        return Icons.print_outlined;
+      case 'memory':
+        return Icons.memory_outlined;
+      case 'settings':
+        return Icons.settings_suggest_outlined;
+      case 'construction':
+        return Icons.construction_outlined;
+      case 'factory':
+        return Icons.factory_outlined;
+      case 'widgets':
+        return Icons.widgets_outlined;
+      case 'science':
+        return Icons.science_outlined;
+      default:
+        return Icons.home_repair_service_outlined;
     }
   }
 }

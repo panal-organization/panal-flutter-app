@@ -4,6 +4,7 @@ import '../../utils/app_colors.dart';
 import '../auth/login_view.dart';
 import '../auth/workspace_selection_view.dart';
 import 'profile_view.dart';
+import 'workspace_users_view.dart';
 
 class SystemView extends StatelessWidget {
   const SystemView({super.key});
@@ -61,6 +62,18 @@ class SystemView extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const ProfileView()),
+            );
+          },
+        ),
+        _buildSettingsTile(
+          icon: Icons.group_outlined,
+          title: 'Usuarios con acceso',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const WorkspaceUsersView(),
+              ),
             );
           },
         ),

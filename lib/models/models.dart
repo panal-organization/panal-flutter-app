@@ -364,10 +364,13 @@ class TipoOrdenes {
 
 class OrdenesServicio {
   String? id;
+  String? foto;
   String? descripcion;
-  String? estadoId;
+  String? estado;
   String? createdBy;
+  Usuarios? creator; // Cambiar a esto
   String? articuloId;
+  Articulos? articulo; // Añadir esto
   String? tipoId;
   String? createdAt;
   String? updatedAt;
@@ -376,10 +379,13 @@ class OrdenesServicio {
 
   OrdenesServicio({
     this.id,
+    this.foto,
     this.descripcion,
-    this.estadoId,
+    this.estado,
     this.createdBy,
+    this.creator, // Cambiar a esto
     this.articuloId,
+    this.articulo, // Añadir esto
     this.tipoId,
     this.createdAt,
     this.updatedAt,
@@ -388,13 +394,44 @@ class OrdenesServicio {
   });
 
   factory OrdenesServicio.fromJson(Map<String, dynamic> json) {
+    dynamic artId = json['articulo_id'];
+    String? fartId;
+    Articulos? artObj; // Añadir esto
+    if (artId is Map<String, dynamic>) {
+      fartId = artId['_id'];
+      artObj = Articulos.fromJson(artId); // Poblar el objeto
+    } else if (artId is String) {
+      fartId = artId;
+    }
+
+    dynamic tId = json['tipo_id'];
+    String? ftId;
+    if (tId is Map<String, dynamic>) {
+      ftId = tId['_id'];
+    } else if (tId is String) {
+      ftId = tId;
+    }
+
+    dynamic cById = json['created_by'];
+    String? fcById;
+    Usuarios? creatorObj; // Añadir esto
+    if (cById is Map<String, dynamic>) {
+      fcById = cById['_id'];
+      creatorObj = Usuarios.fromJson(cById); // Poblar el objeto
+    } else if (cById is String) {
+      fcById = cById;
+    }
+
     return OrdenesServicio(
       id: json['_id'],
+      foto: json['foto'],
       descripcion: json['descripcion'],
-      estadoId: json['estado_id'],
-      createdBy: json['created_by'],
-      articuloId: json['articulo_id'],
-      tipoId: json['tipo_id'],
+      estado: json['estado'],
+      createdBy: fcById,
+      creator: creatorObj, // Poblar esto
+      articuloId: fartId,
+      articulo: artObj, // Poblar esto
+      tipoId: ftId,
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
       isDeleted: json['is_deleted'],
@@ -405,8 +442,9 @@ class OrdenesServicio {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {
       '_id': id,
+      'foto': foto,
       'descripcion': descripcion,
-      'estado_id': estadoId,
+      'estado': estado,
       'created_by': createdBy,
       'articulo_id': articuloId,
       'tipo_id': tipoId,
@@ -454,24 +492,52 @@ class Almacen {
 
 class Articulos {
   String? id;
+  String? foto;
   String? nombre;
+  String? descripcion;
+  String? almacenId;
   String? workspaceId;
+  bool? estatus;
+  String? createdAt;
+  String? updatedAt;
 
-  Articulos({this.id, this.nombre, this.workspaceId});
+  Articulos({
+    this.id,
+    this.foto,
+    this.nombre,
+    this.descripcion,
+    this.almacenId,
+    this.workspaceId,
+    this.estatus,
+    this.createdAt,
+    this.updatedAt,
+  });
 
   factory Articulos.fromJson(Map<String, dynamic> json) {
     return Articulos(
       id: json['_id'],
+      foto: json['foto'],
       nombre: json['nombre'],
+      descripcion: json['descripcion'],
+      almacenId: json['almacen_id'],
       workspaceId: json['workspace_id'],
+      estatus: json['estatus'],
+      createdAt: json['createdAt'],
+      updatedAt: json['updatedAt'],
     );
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {
       '_id': id,
+      'foto': foto,
       'nombre': nombre,
+      'descripcion': descripcion,
+      'almacen_id': almacenId,
       'workspace_id': workspaceId,
+      'estatus': estatus,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
     };
     data.removeWhere((key, value) => value == null);
     return data;
