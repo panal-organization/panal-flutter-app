@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../controllers/auth_controller.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'workspace_selection_view.dart';
+import '../../layout/main.layout.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_toast.dart';
 
@@ -21,22 +19,6 @@ class _LoginViewState extends State<LoginView> {
 
   bool _isLoading = false;
   bool _obscurePassword = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSavedEmail();
-  }
-
-  Future<void> _loadSavedEmail() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedEmail = prefs.getString('user_email');
-    if (savedEmail != null) {
-      setState(() {
-        _emailController.text = savedEmail;
-      });
-    }
-  }
 
   @override
   void dispose() {
@@ -62,7 +44,7 @@ class _LoginViewState extends State<LoginView> {
 
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const WorkspaceSelectionView()),
+          MaterialPageRoute(builder: (_) => const MainLayout()),
         );
       }
     } catch (e) {
@@ -187,8 +169,9 @@ class _LoginViewState extends State<LoginView> {
                           ),
                         ),
                         validator: (value) {
-                          if (value == null || value.isEmpty)
+                          if (value == null || value.isEmpty) {
                             return 'Requerido';
+                          }
                           if (!value.contains('@')) return 'Correo inválido';
                           return null;
                         },
@@ -230,8 +213,9 @@ class _LoginViewState extends State<LoginView> {
                           ),
                         ),
                         validator: (value) {
-                          if (value == null || value.isEmpty)
+                          if (value == null || value.isEmpty) {
                             return 'Requerido';
+                          }
                           return null;
                         },
                       ),

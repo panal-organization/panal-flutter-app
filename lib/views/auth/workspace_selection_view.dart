@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../models/models.dart';
 import '../../controllers/app_controllers.dart';
 import '../../layout/main.layout.dart';
@@ -465,9 +466,6 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
               },
             ),
             ListTile(
-              enabled:
-                  _userPlanId == _premiumPlanId ||
-                  _userPlanId == '69a3df3381a5be4cb1bd8bc3',
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -512,9 +510,20 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
                   fontSize: 12,
                 ),
               ),
+              trailing: IconButton(
+                icon: const Icon(Icons.open_in_new),
+                color: AppColors.secondaryBase,
+                tooltip: 'Ser miembro premium',
+                onPressed: _openUpgradePage,
+              ),
               onTap: () {
-                Navigator.pop(ctx);
-                _showCreateWorkspaceDialog();
+                if (_userPlanId == _premiumPlanId ||
+                    _userPlanId == '69a3df3381a5be4cb1bd8bc3') {
+                  Navigator.pop(ctx);
+                  _showCreateWorkspaceDialog();
+                } else {
+                  _openUpgradePage();
+                }
               },
             ),
             const SizedBox(height: 16),
@@ -522,6 +531,15 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
         ),
       ),
     );
+  }
+
+  Future<void> _openUpgradePage() async {
+    final upgradeUrl = Uri.parse('http://localhost:5173/panal-web-application/pricing');
+    if (await canLaunchUrl(upgradeUrl)) {
+      await launchUrl(upgradeUrl, mode: LaunchMode.externalApplication);
+    } else {
+      AppToast.show(context, 'No se pudo abrir la URL de pago', isError: true);
+    }
   }
 
   Future<void> _showJoinWorkspaceDialog() async {
