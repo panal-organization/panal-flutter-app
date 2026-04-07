@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../utils/app_colors.dart';
+import './ai_service.dart';
+import './chat_message.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -10,28 +12,163 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   final TextEditingController _messageController = TextEditingController();
+  final AiService _aiService = AiService();
 
-  void _sendMessage() {
+  List<ChatMessage> _messages = [];
+  bool _isLoading = false;
+
+  void _sendMessage() async {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
-    // Aquí puedes manejar el envío
-    print(text);
+    setState(() {
+      _messages.add(ChatMessage(text: text, isUser: true));
+      _isLoading = true;
+    });
 
     _messageController.clear();
+
+    try {
+      final result = await _aiService.generatePlan(text);
+
+      print("RESULT COMPLETO:");
+      print(result);
+
+      final draft = result['draft_preview'];
+      final summary = result['summary_preview'];
+
+      setState(() {
+        _messages.add(ChatMessage(
+          text: (draft != null || summary != null)
+              ? ""
+              : result['message'] ?? "Respuesta generada",
+          isUser: false,
+          data: result,
+        ));
+      });
+    } catch (e) {
+      setState(() {
+        _messages.add(ChatMessage(
+          text: "Error: $e",
+          isUser: false,
+        ));
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
+  Widget _buildMessages() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: _messages.length,
+      itemBuilder: (context, index) {
+        final msg = _messages[index];
+
+        return Align(
+          alignment:
+              msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: msg.isUser
+                  ? AppColors.secondaryBase
+                  : Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: _buildMessageContent(msg),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMessageContent(ChatMessage msg) {
+    if (msg.data != null) {
+      final data = msg.data!;
+
+      // Manejo de draft
+      if (data['draft_preview'] != null) {
+        final draft = data['draft_preview'];
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Spacer(), // Empuja el input hacia abajo
-            containerInputSection(context),
-            const SizedBox(height: 12),
+            Text(
+              draft['titulo'] ?? '',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(draft['descripcion'] ?? ''),
+            const SizedBox(height: 4),
+            Text("Prioridad: ${draft['prioridad'] ?? ''}"),
+            Text("Categoría: ${draft['categoria'] ?? ''}"),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () {
+                _confirmTicket(data);
+              },
+              child: const Text("Confirmar ticket"),
+            ),
           ],
-        ),
+        );
+      }
+
+      // Manejo de summary
+      if (data['summary_preview'] != null) {
+        final summary = data['summary_preview'];
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Agente de IA",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 6),
+            Text(summary['resumen'] ?? ''),
+          ],
+        );
+      }
+    }
+
+    // Fallback
+    return Text(
+      msg.text.isNotEmpty ? msg.text : "Sin contenido",
+      style: TextStyle(
+        color: msg.isUser ? Colors.white : Colors.black,
+      ),
+    );
+  }
+
+  void _confirmTicket(Map data) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Confirmar ticket"),
+        content: const Text("¿Deseas crear este ticket?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancelar"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+
+              final aiLogId = data['ai_log_id'];
+              print("Crear ticket con ai_log_id: $aiLogId");
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Ticket confirmado")),
+              );
+            },
+            child: const Text("Confirmar"),
+          ),
+        ],
       ),
     );
   }
@@ -60,27 +197,13 @@ class _HomeViewState extends State<HomeView> {
                 hintText: 'Escribe tu mensaje...',
                 filled: true,
                 fillColor: Colors.white.withOpacity(0.9),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 14),
                 hintStyle: TextStyle(
                   color: AppColors.menuBackground.withOpacity(0.6),
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(50),
-                  borderSide: BorderSide(color: AppColors.secondaryBg, width: 1),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50),
-                  borderSide: BorderSide(
-                    color: AppColors.secondaryBg.withOpacity(0.8),
-                    width: 1,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50),
-                  borderSide: BorderSide(
-                    color: AppColors.primaryBase,
-                    width: 2,
-                  ),
                 ),
               ),
             ),
@@ -96,6 +219,25 @@ class _HomeViewState extends State<HomeView> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(child: _buildMessages()),
+            if (_isLoading)
+              const Padding(
+                padding: EdgeInsets.all(8),
+                child: CircularProgressIndicator(),
+              ),
+            containerInputSection(context),
+          ],
+        ),
       ),
     );
   }
