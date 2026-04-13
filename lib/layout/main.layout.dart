@@ -30,7 +30,7 @@ class _MainLayoutState extends State<MainLayout> {
   final List<String> _titles = [
     'Servicios',
     'Almacén',
-    'Inicio',
+    'Asistente',
     'Mantenimiento',
     'Sistema',
   ];
@@ -38,7 +38,7 @@ class _MainLayoutState extends State<MainLayout> {
   final List<IconData> _icons = [
     Icons.grid_view_outlined,
     Icons.inventory_2_outlined,
-    Icons.home_outlined,
+    Icons.psychology_outlined,
     Icons.engineering_outlined,
     Icons.settings_outlined,
   ];
@@ -46,7 +46,7 @@ class _MainLayoutState extends State<MainLayout> {
   final List<IconData> _activeIcons = [
     Icons.grid_view,
     Icons.inventory_2,
-    Icons.home,
+    Icons.psychology,
     Icons.engineering,
     Icons.settings,
   ];

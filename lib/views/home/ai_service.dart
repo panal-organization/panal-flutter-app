@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AiService {
-  final String baseUrl = "https://except-preview-systematic-acids.trycloudflare.com"; 
+  final String baseUrl = "https://lending-bandwidth-commercial-seekers.trycloudflare.com";
 
   Future<Map<String, dynamic>> generatePlan(String text) async {
     final response = await http.post(

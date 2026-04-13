@@ -61,28 +61,58 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget _buildMessages() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: _messages.length,
-      itemBuilder: (context, index) {
-        final msg = _messages[index];
-
-        return Align(
-          alignment:
-              msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 4),
+    return _messages.isEmpty
+        ? _buildEmptyState()
+        : ListView.builder(
             padding: const EdgeInsets.all(12),
+            itemCount: _messages.length,
+            itemBuilder: (context, index) {
+              final msg = _messages[index];
+              return Align(
+                alignment: msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: msg.isUser
+                        ? AppColors.secondaryBase
+                        : Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: _buildMessageContent(msg),
+                ),
+              );
+            },
+          );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: msg.isUser
-                  ? AppColors.secondaryBase
-                  : Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(12),
+              color: Colors.blue.shade50,
+              shape: BoxShape.circle,
             ),
-            child: _buildMessageContent(msg),
+            child: Icon(Icons.chat_bubble_outline, color: Colors.blue.shade400, size: 22),
           ),
-        );
-      },
+          const SizedBox(height: 12),
+          const Text(
+            "Asistente de tickets",
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            "Describe tu problema o solicitud\ny te ayudaré a gestionarlo.",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade500, height: 1.6),
+          ),
+        ],
+      ),
     );
   }
 
@@ -125,7 +155,7 @@ class _HomeViewState extends State<HomeView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Agente de IA",
+              "Asistente de tickets",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 6),
