@@ -17,6 +17,13 @@ class _HomeViewState extends State<HomeView> {
   List<ChatMessage> _messages = [];
   bool _isLoading = false;
 
+  void _startNewChat() {
+    setState(() {
+      _messages = [];
+    });
+    _messageController.clear();
+  }
+
   void _sendMessage() async {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
@@ -256,6 +263,18 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      actions: [
+        if (_messages.isNotEmpty)
+          IconButton(
+            tooltip: "Nueva conversación",
+            icon: Icon(Icons.edit_square, color: AppColors.secondaryBase),
+            onPressed: _startNewChat,
+          ),
+      ],
+    ),
       body: SafeArea(
         child: Column(
           children: [
