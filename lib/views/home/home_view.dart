@@ -36,35 +36,108 @@ class _HomeViewState extends State<HomeView> {
     _messageController.clear();
 
     try {
-      final result = await _aiService.generatePlan(text);
-
-      print("RESULT COMPLETO:");
-      print(result);
-
-      final draft = result['draft_preview'];
-      final summary = result['summary_preview'];
+      final result = await _aiService.sendToAgent(text);
 
       setState(() {
         _messages.add(ChatMessage(
-          text: (draft != null || summary != null)
-              ? ""
-              : result['message'] ?? "Respuesta generada",
+          text: result['message'] ?? "Respuesta generada",
           isUser: false,
           data: result,
         ));
       });
     } catch (e) {
       setState(() {
-        _messages.add(ChatMessage(
-          text: "Error: $e",
-          isUser: false,
-        ));
+        _messages.add(ChatMessage(text: "Error: $e", isUser: false));
       });
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
+  }
+
+  void _confirmTicket(String aiLogId) async {
+    // Cerramos el diálogo antes de la llamada
+    Navigator.pop(context);
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final result = await _aiService.confirmTicket(aiLogId);
+
+      final ticketId = result['execution_result']?['ticket_id'];
+      final status = result['execution_result']?['status'];
+
+      setState(() {
+        _messages.add(ChatMessage(
+          text: status == 'ticket_created'
+              ? "Ticket creado exitosamente.\nID: $ticketId"
+              : result['message'] ?? "Ticket procesado.",
+          isUser: false,
+          data: result,
+        ));
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            ticketId != null
+                ? "Ticket creado: $ticketId"
+                : "Ticket confirmado",
+          ),
+          backgroundColor: Colors.blue,
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        _messages.add(ChatMessage(text: "Error al confirmar: $e", isUser: false));
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showConfirmDialog(String aiLogId, Map<String, dynamic> draft) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Confirmar ticket"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(draft['titulo'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            Text(draft['descripcion'] ?? ''),
+            const SizedBox(height: 6),
+            Text("Prioridad: ${draft['prioridad'] ?? ''}"),
+            Text("Categoría: ${draft['categoria'] ?? ''}"),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.secondaryBase,
+              foregroundColor: AppColors.primaryOn,
+            ),
+            child: const Text("Cancelar"),
+          ),
+          ElevatedButton(
+            onPressed: () => _confirmTicket(aiLogId),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.secondaryBase,
+              foregroundColor: AppColors.primaryOn,
+            ),
+            child: const Text("Confirmar"),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildMessages() {
@@ -76,7 +149,8 @@ class _HomeViewState extends State<HomeView> {
             itemBuilder: (context, index) {
               final msg = _messages[index];
               return Align(
-                alignment: msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
+                alignment:
+                    msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
                 child: Container(
                   margin: const EdgeInsets.symmetric(vertical: 4),
                   padding: const EdgeInsets.all(12),
@@ -105,7 +179,8 @@ class _HomeViewState extends State<HomeView> {
               color: Colors.blue.shade50,
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.chat_bubble_outline, color: Colors.blue.shade400, size: 22),
+            child: Icon(Icons.chat_bubble_outline,
+                color: Colors.blue.shade400, size: 22),
           ),
           const SizedBox(height: 12),
           const Text(
@@ -116,7 +191,8 @@ class _HomeViewState extends State<HomeView> {
           Text(
             "Describe tu problema o solicitud\ny te ayudaré a gestionarlo.",
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade500, height: 1.6),
+            style:
+                TextStyle(fontSize: 13, color: Colors.grey.shade500, height: 1.6),
           ),
         ],
       ),
@@ -126,10 +202,31 @@ class _HomeViewState extends State<HomeView> {
   Widget _buildMessageContent(ChatMessage msg) {
     if (msg.data != null) {
       final data = msg.data!;
+      final action = data['action'];
+      final executionResult = data['execution_result'];
 
-      // Manejo de draft
-      if (data['draft_preview'] != null) {
-        final draft = data['draft_preview'];
+      // Ticket ya creado (respuesta del continue)
+      if (executionResult != null &&
+          executionResult['status'] == 'ticket_created') {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle, color: Colors.blue.shade600, size: 18),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                "Ticket creado\nID: ${executionResult['ticket_id']}",
+                style: const TextStyle(color: Colors.black),
+              ),
+            ),
+          ],
+        );
+      }
+
+      // Borrador pendiente de confirmación (respuesta del agent)
+      if (action == 'draft' && data['result'] != null) {
+        final draft = data['result'] as Map<String, dynamic>;
+        final aiLogId = data['ai_log_id'] as String;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,70 +240,25 @@ class _HomeViewState extends State<HomeView> {
             const SizedBox(height: 4),
             Text("Prioridad: ${draft['prioridad'] ?? ''}"),
             Text("Categoría: ${draft['categoria'] ?? ''}"),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: () {
-                _confirmTicket(data);
-              },
-              child: const Text("Confirmar ticket"),
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: () => _showConfirmDialog(aiLogId, draft),
+              icon: const Icon(Icons.check, size: 16),
+              label: const Text("Confirmar ticket"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.secondaryBase,
+                foregroundColor: AppColors.primaryOn,
+              ),
             ),
-          ],
-        );
-      }
-
-      // Manejo de summary
-      if (data['summary_preview'] != null) {
-        final summary = data['summary_preview'];
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Asistente de tickets",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 6),
-            Text(summary['resumen'] ?? ''),
           ],
         );
       }
     }
 
-    // Fallback
+    // Fallback texto plano
     return Text(
       msg.text.isNotEmpty ? msg.text : "Sin contenido",
-      style: TextStyle(
-        color: msg.isUser ? Colors.white : Colors.black,
-      ),
-    );
-  }
-
-  void _confirmTicket(Map data) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Confirmar ticket"),
-        content: const Text("¿Deseas crear este ticket?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancelar"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-
-              final aiLogId = data['ai_log_id'];
-              print("Crear ticket con ai_log_id: $aiLogId");
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Ticket confirmado")),
-              );
-            },
-            child: const Text("Confirmar"),
-          ),
-        ],
-      ),
+      style: TextStyle(color: msg.isUser ? Colors.white : Colors.black),
     );
   }
 
@@ -234,8 +286,8 @@ class _HomeViewState extends State<HomeView> {
                 hintText: 'Escribe tu mensaje...',
                 filled: true,
                 fillColor: Colors.white.withOpacity(0.9),
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 14),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 hintStyle: TextStyle(
                   color: AppColors.menuBackground.withOpacity(0.6),
                 ),
@@ -264,17 +316,18 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      actions: [
-        if (_messages.isNotEmpty)
-          IconButton(
-            tooltip: "Nueva conversación",
-            icon: Icon(Icons.edit_square, color: AppColors.secondaryBase),
-            onPressed: _startNewChat,
-          ),
-      ],
-    ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        actions: [
+          if (_messages.isNotEmpty)
+            IconButton(
+              tooltip: "Nueva conversación",
+              icon: Icon(Icons.edit_square, color: AppColors.secondaryBase),
+              onPressed: _startNewChat,
+            ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
