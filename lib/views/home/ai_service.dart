@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AiService {
-  final String baseUrl = "https://lending-bandwidth-commercial-seekers.trycloudflare.com";
+  final String baseUrl = "https://bicycle-desired-remarkable-resistant.trycloudflare.com";
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();

@@ -70,7 +70,7 @@ class _HomeViewState extends State<HomeView> {
       });
     } catch (e) {
       setState(() {
-        _messages.add(ChatMessage(text: "Error: $e", isUser: false));
+        _messages.add(ChatMessage(text: "Asistente no disponible", isUser: false));
       });
     } finally {
       setState(() {
@@ -115,7 +115,7 @@ class _HomeViewState extends State<HomeView> {
       );
     } catch (e) {
       setState(() {
-        _messages.add(ChatMessage(text: "Error al confirmar: $e", isUser: false));
+        _messages.add(ChatMessage(text: "Asistente no disponible", isUser: false));
       });
     } finally {
       setState(() {
@@ -316,6 +316,13 @@ class _HomeViewState extends State<HomeView> {
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(50),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(50),
+                  borderSide: const BorderSide(
+                    color: AppColors.secondaryBase,
+                    width: 1.8,
+                  ),
                 ),
               ),
             ),
