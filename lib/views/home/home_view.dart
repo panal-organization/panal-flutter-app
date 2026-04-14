@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../utils/app_colors.dart';
 import './ai_service.dart';
 import './chat_message.dart';
@@ -16,6 +18,27 @@ class _HomeViewState extends State<HomeView> {
 
   List<ChatMessage> _messages = [];
   bool _isLoading = false;
+  bool _isPremium = true; // default true until prefs loaded
+  bool _prefsLoaded = false;
+
+  static const String _premiumPlanId = '69a3df3381a5be4cb1bd8bc3';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlan();
+  }
+
+  Future<void> _loadPlan() async {
+    final prefs = await SharedPreferences.getInstance();
+    final planId = prefs.getString('workspace_plan_id');
+    if (mounted) {
+      setState(() {
+        _isPremium = planId == _premiumPlanId || planId == null;
+        _prefsLoaded = true;
+      });
+    }
+  }
 
   void _startNewChat() {
     setState(() {
@@ -312,8 +335,186 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  // ─────────────── FREE PLAN UPGRADE SCREEN ───────────────
+  Widget _buildFreeUpgradeScreen() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Icon
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.warningBase.withOpacity(0.15),
+                    AppColors.warningBase.withOpacity(0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: const Icon(
+                Icons.auto_awesome,
+                size: 52,
+                color: AppColors.warningBase,
+              ),
+            ),
+            const SizedBox(height: 28),
+
+            // Title
+            const Text(
+              'Agente de IA',
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textBase,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Subtitle
+            Text(
+              'Esta función está disponible\nexclusivamente en el plan Premium.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey.shade600,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Features list
+            _buildFeatureItem(
+              Icons.smart_toy_outlined,
+              'Asistente con IA',
+              'Crea tickets y genera planes automáticamente.',
+            ),
+            const SizedBox(height: 16),
+            _buildFeatureItem(
+              Icons.people_alt_outlined,
+              'Usuarios ilimitados',
+              'Invita a todo tu equipo al workspace.',
+            ),
+            const SizedBox(height: 16),
+            _buildFeatureItem(
+              Icons.inventory_2_outlined,
+              'Almacenes ilimitados',
+              'Organiza tu inventario sin restricciones.',
+            ),
+            const SizedBox(height: 16),
+            _buildFeatureItem(
+              Icons.confirmation_number_outlined,
+              'Tickets ilimitados',
+              'Sin límite diario de creación de tickets.',
+            ),
+            const SizedBox(height: 36),
+
+            // CTA Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _openUpgradePage,
+                icon: const Icon(Icons.star_rounded, color: Colors.white),
+                label: const Text(
+                  'Obtener Premium',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.warningBase,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 2,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            Text(
+              'Desbloquea todas las funcionalidades y lleva tu negocio al siguiente nivel.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade500,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureItem(IconData icon, String title, String subtitle) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: AppColors.secondaryBase.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, size: 22, color: AppColors.secondaryBase),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  color: AppColors.textBase,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _openUpgradePage() async {
+    final upgradeUrl = Uri.parse('http://localhost:5173/panal-web-application/pricing');
+    if (await canLaunchUrl(upgradeUrl)) {
+      await launchUrl(upgradeUrl, mode: LaunchMode.externalApplication);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (!_prefsLoaded) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.secondaryBase),
+      );
+    }
+
+    // FREE plan: show upgrade screen
+    if (!_isPremium) {
+      return _buildFreeUpgradeScreen();
+    }
+
+    // PREMIUM plan: show full AI chat
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,

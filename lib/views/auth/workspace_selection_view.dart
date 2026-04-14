@@ -99,9 +99,14 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
     }
   }
 
-  Future<void> _selectWorkspace(String workspaceId) async {
+  Future<void> _selectWorkspace(String workspaceId, {String? planId}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selected_workspace_id', workspaceId);
+    if (planId != null) {
+      await prefs.setString('workspace_plan_id', planId);
+    } else {
+      await prefs.remove('workspace_plan_id');
+    }
     if (!mounted) return;
     Navigator.of(
       context,
@@ -380,7 +385,7 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
                                         color: Colors.transparent,
                                         child: IconButton(
                                           onPressed: () =>
-                                              _selectWorkspace(ws.id!),
+                                              _selectWorkspace(ws.id!, planId: ws.planId),
                                           icon: const Icon(
                                             Icons.chevron_right_rounded,
                                             size: 32,
@@ -612,6 +617,28 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
       if (!mounted) return;
       setState(() => _isLoading = true);
       try {
+        // Verificar si el workspace es gratuito y ya tiene miembros
+        final wsList = await WorkspacesController().getByCode(result);
+        if (wsList.isNotEmpty) {
+          final ws = wsList.first;
+          final premiumId = _premiumPlanId ?? '69a3df3381a5be4cb1bd8bc3';
+          final isPremiumWs = ws.planId == premiumId;
+          if (!isPremiumWs) {
+            // Verificar cuántos miembros tiene el workspace
+            final members = await WorkspacesUsuariosController().getByWorkspaceId(ws.id!);
+            if (members.isNotEmpty) {
+              if (!mounted) return;
+              setState(() => _isLoading = false);
+              AppToast.show(
+                context,
+                'Este espacio gratuito ya tiene un miembro. Actualiza a Premium para invitar más usuarios.',
+                isError: true,
+              );
+              return;
+            }
+          }
+        }
+
         final ctrl = WorkspacesController();
         final success = await ctrl.joinByCode(_userId!, result);
 

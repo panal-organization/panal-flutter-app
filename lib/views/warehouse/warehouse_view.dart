@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../controllers/app_controllers.dart';
 import '../../models/models.dart';
 import '../../utils/app_colors.dart';
@@ -18,6 +19,9 @@ class _WarehouseViewState extends State<WarehouseView> {
   List<Almacen> _almacenes = [];
   bool _isLoading = true;
   String? _workspaceId;
+  bool _isPremium = true; // default until prefs loaded
+
+  static const String _premiumPlanId = '69a3df3381a5be4cb1bd8bc3';
 
   @override
   void initState() {
@@ -31,6 +35,8 @@ class _WarehouseViewState extends State<WarehouseView> {
     try {
       final prefs = await SharedPreferences.getInstance();
       _workspaceId = prefs.getString('selected_workspace_id');
+      final planId = prefs.getString('workspace_plan_id');
+      _isPremium = planId == _premiumPlanId || planId == null;
 
       if (_workspaceId != null) {
         final almacenes = await _almacenController.getByWorkspace(
@@ -96,7 +102,7 @@ class _WarehouseViewState extends State<WarehouseView> {
       floatingActionButton: SizedBox(
         height: 40,
         child: FloatingActionButton.extended(
-          onPressed: _showCreateWarehouseDialog,
+          onPressed: _onCreateWarehouseTap,
           backgroundColor: AppColors.secondaryBase,
           elevation: 3,
           icon: const Icon(Icons.add, size: 20, color: Colors.white),
@@ -246,6 +252,65 @@ class _WarehouseViewState extends State<WarehouseView> {
       ),
     );
   }
+  void _onCreateWarehouseTap() {
+    // Free plan: max 1 warehouse
+    if (!_isPremium && _almacenes.length >= 1) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: const [
+              Icon(Icons.star_rounded, color: AppColors.warningBase, size: 22),
+              SizedBox(width: 8),
+              Text(
+                'Plan Gratuito',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textBase,
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Con el plan gratuito solo puedes tener 1 almacén.\n\nActualiza a Premium para crear almacenes ilimitados y acceder a todas las funciones.',
+            style: TextStyle(color: Colors.grey, height: 1.5),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Entendido', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(context);
+                _openUpgradePage();
+              },
+              icon: const Icon(Icons.open_in_new, size: 16, color: Colors.white),
+              label: const Text(
+                'Ver Premium',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.warningBase,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    _showCreateWarehouseDialog();
+  }
+
+  Future<void> _openUpgradePage() async {
+    final upgradeUrl = Uri.parse('http://localhost:5173/panal-web-application/pricing');
+    if (await canLaunchUrl(upgradeUrl)) {
+      await launchUrl(upgradeUrl, mode: LaunchMode.externalApplication);
+    }
+  }
+
 
   Future<void> _showCreateWarehouseDialog() async {
     final nameController = TextEditingController();

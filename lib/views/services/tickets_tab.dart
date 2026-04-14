@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../models/models.dart';
 import '../../controllers/app_controllers.dart';
 import '../../utils/app_colors.dart';
@@ -22,6 +23,10 @@ class _TicketsTabState extends State<TicketsTab> {
   final ImagePicker _picker = ImagePicker();
   String _searchQuery = '';
   String _selectedStateFilter = 'TODOS';
+  bool _isPremium = true; // default until prefs loaded
+
+  static const String _premiumPlanId = '69a3df3381a5be4cb1bd8bc3';
+  static const int _freeDailyTicketLimit = 10;
 
   @override
   void initState() {
@@ -37,6 +42,8 @@ class _TicketsTabState extends State<TicketsTab> {
       final prefs = await SharedPreferences.getInstance();
       _workspaceId = prefs.getString('selected_workspace_id');
       _userId = prefs.getString('user_id');
+      final planId = prefs.getString('workspace_plan_id');
+      _isPremium = planId == _premiumPlanId || planId == null;
 
       if (_workspaceId != null) {
         final ticketsController = TicketsController();
@@ -533,6 +540,73 @@ class _TicketsTabState extends State<TicketsTab> {
   }
 
   Future<void> _showCreateDialog() async {
+    // Free plan: enforce daily ticket limit
+    if (!_isPremium) {
+      final today = DateTime.now();
+      final todayTickets = _tickets.where((t) {
+        if (t.isDeleted == true) return false;
+        if (t.createdAt == null) return false;
+        final dt = DateTime.tryParse(t.createdAt!);
+        if (dt == null) return false;
+        final local = dt.toLocal();
+        return local.year == today.year &&
+            local.month == today.month &&
+            local.day == today.day;
+      }).length;
+
+      if (todayTickets >= _freeDailyTicketLimit) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Row(
+              children: const [
+                Icon(Icons.star_rounded, color: AppColors.warningBase, size: 22),
+                SizedBox(width: 8),
+                Text(
+                  'Límite del día alcanzado',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textBase,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+            content: Text(
+              'Con el plan gratuito puedes crear hasta $_freeDailyTicketLimit tickets por día.\n\nHas creado $todayTickets tickets hoy. Activa Premium para tickets ilimitados.',
+              style: const TextStyle(color: Colors.grey, height: 1.5),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Entendido', style: TextStyle(color: Colors.grey)),
+              ),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  final upgradeUrl = Uri.parse('http://localhost:5173/panal-web-application/pricing');
+                  if (await canLaunchUrl(upgradeUrl)) {
+                    await launchUrl(upgradeUrl, mode: LaunchMode.externalApplication);
+                  }
+                },
+                icon: const Icon(Icons.open_in_new, size: 16, color: Colors.white),
+                label: const Text(
+                  'Ver Premium',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.warningBase,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+    }
+
     final titleController = TextEditingController();
     final descController = TextEditingController();
     String priorityValue = 'MEDIA';
