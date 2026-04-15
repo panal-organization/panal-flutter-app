@@ -4,6 +4,7 @@ import '../../layout/main.layout.dart';
 import 'workspace_selection_view.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_toast.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -70,38 +71,75 @@ class _LoginViewState extends State<LoginView> {
       backgroundColor: AppColors.menuBackground,
       body: Stack(
         children: [
+          // Background Vector Pattern (Hexagon)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: MediaQuery.of(context).size.height * 0.5,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                SvgPicture.asset(
+                  'assets/app/Hexagon.svg',
+                  fit: BoxFit.cover,
+                ),
+                // Dark overlay to ensure logo and text remain highly legible
+                Container(color: Colors.black.withOpacity(0.3)),
+              ],
+            ),
+          ),
+
           // Upper Section: Logo and Branding
           Positioned(
             top: 0,
             left: 0,
             right: 0,
             height: MediaQuery.of(context).size.height * 0.45,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  height: 100,
-                  width: 100,
-                  // Minimalist: No shadow, just the circular image
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    image: DecorationImage(
-                      image: AssetImage('assets/app/icon.png'),
-                      fit: BoxFit.cover,
+            child: SafeArea(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    height: 110,
+                    width: 110,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: const DecorationImage(
+                        image: AssetImage('assets/app/icon.png'),
+                        fit: BoxFit.cover,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                      border: Border.all(color: Colors.white.withOpacity(0.2), width: 2),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Panal App',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 1.2,
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Panal App',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: 1.5,
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    'Gestión Inteligente',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.8),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -114,12 +152,19 @@ class _LoginViewState extends State<LoginView> {
             height: MediaQuery.of(context).size.height * 0.60,
             child: Container(
               padding: const EdgeInsets.fromLTRB(30, 40, 30, 20),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(40),
                   topRight: Radius.circular(40),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
               ),
               child: Form(
                 key: _formKey,
@@ -127,22 +172,23 @@ class _LoginViewState extends State<LoginView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      const SizedBox(height: 10),
                       const Text(
                         'Bienvenido de nuevo',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
                           color: AppColors.textBase,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         'Inicia sesión para continuar',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                        style: TextStyle(fontSize: 14, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 48),
 
                       // Email Input - Minimalist
                       // Using a light grey background, no borders
@@ -161,12 +207,20 @@ class _LoginViewState extends State<LoginView> {
                             color: Colors.grey,
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: AppColors.secondaryBase, width: 2),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
-                            vertical: 20,
-                            horizontal: 20,
+                            vertical: 16,
+                            horizontal: 16,
                           ),
                         ),
                         validator: (value) {
@@ -205,12 +259,20 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: AppColors.secondaryBase, width: 2),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
-                            vertical: 20,
-                            horizontal: 20,
+                            vertical: 16,
+                            horizontal: 16,
                           ),
                         ),
                         validator: (value) {
@@ -220,28 +282,29 @@ class _LoginViewState extends State<LoginView> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 48),
 
                       // Sign In Button
                       SizedBox(
-                        height: 55,
+                        height: 52,
                         child: ElevatedButton(
                           onPressed: _isLoading ? null : _handleLogin,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.menuBackground,
                             foregroundColor: Colors.white,
-                            elevation: 0, // Minimalist: no shadow
+                            elevation: 2, 
+                            shadowColor: Colors.black.withOpacity(0.2),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                           ),
                           child: _isLoading
                               ? const SizedBox(
-                                  width: 24,
-                                  height: 24,
+                                  width: 22,
+                                  height: 22,
                                   child: CircularProgressIndicator(
                                     color: Colors.white,
-                                    strokeWidth: 2,
+                                    strokeWidth: 2.0,
                                   ),
                                 )
                               : const Text(

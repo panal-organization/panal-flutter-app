@@ -43,9 +43,9 @@ class Comentario {
     dynamic uId = json['usuario'];
     String? finalUId;
     if (uId is Map<String, dynamic>) {
-        finalUId = uId['_id'];
+      finalUId = uId['_id'];
     } else if (uId is String) {
-        finalUId = uId;
+      finalUId = uId;
     }
 
     return Comentario(
@@ -157,6 +157,7 @@ class Usuarios {
   String? createdAt;
   String? updatedAt;
   String? planId;
+  Plan? plan;
 
   bool get isPremium {
     return planId == '69a3df3381a5be4cb1bd8bc3';
@@ -177,9 +178,20 @@ class Usuarios {
     this.createdAt,
     this.updatedAt,
     this.planId,
+    this.plan,
   });
 
   factory Usuarios.fromJson(Map<String, dynamic> json) {
+    dynamic pId = json['plan_id'];
+    String? finalPlanId;
+    Plan? planObj;
+    if (pId is Map<String, dynamic>) {
+      finalPlanId = pId['_id'];
+      planObj = Plan.fromJson(pId);
+    } else if (pId is String) {
+      finalPlanId = pId;
+    }
+
     return Usuarios(
       id: json['_id'],
       nombre: json['nombre'],
@@ -190,7 +202,8 @@ class Usuarios {
       foto: json['foto'],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
-      planId: json['plan_id'],
+      planId: finalPlanId,
+      plan: planObj,
     );
   }
 

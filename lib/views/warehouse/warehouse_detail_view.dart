@@ -607,6 +607,7 @@ class _WarehouseDetailViewState extends State<WarehouseDetailView> {
         nombre: name,
         descripcion: description,
         almacenId: widget.warehouse.id,
+        workspaceId: _workspaceId,
         estatus: true,
       );
 
@@ -657,7 +658,15 @@ class _WarehouseDetailViewState extends State<WarehouseDetailView> {
     }
 
     try {
-      final updateData = Articulos(estatus: active);
+      final updateData = Articulos(
+        id: articulo.id,
+        nombre: articulo.nombre,
+        descripcion: articulo.descripcion,
+        foto: articulo.foto,
+        almacenId: articulo.almacenId,
+        workspaceId: articulo.workspaceId ?? _workspaceId,
+        estatus: active,
+      );
       final ok = await _articulosController.update(articulo.id!, updateData);
       if (ok) {
         if (!mounted) return;
@@ -843,7 +852,16 @@ class _WarehouseDetailViewState extends State<WarehouseDetailView> {
     if (articulo.id == null) return;
     setState(() => _isLoading = true);
     try {
-      final success = await _articulosController.update(articulo.id!, Articulos(almacenId: newWarehouseId));
+      final updateData = Articulos(
+        id: articulo.id,
+        nombre: articulo.nombre,
+        descripcion: articulo.descripcion,
+        foto: articulo.foto,
+        workspaceId: articulo.workspaceId ?? _workspaceId,
+        estatus: articulo.estatus,
+        almacenId: newWarehouseId,
+      );
+      final success = await _articulosController.update(articulo.id!, updateData);
       if (success) {
         AppToast.show(context, 'Artículo movido correctamente');
         _refreshAllData();
@@ -1042,8 +1060,13 @@ class _WarehouseDetailViewState extends State<WarehouseDetailView> {
     setState(() => _isLoading = true);
     try {
       final updateData = Articulos(
+        id: articulo.id,
         nombre: name,
         descripcion: description,
+        foto: articulo.foto,
+        almacenId: articulo.almacenId,
+        estatus: articulo.estatus,
+        workspaceId: articulo.workspaceId ?? _workspaceId,
       );
       
       final success = await _articulosController.update(articulo.id!, updateData);

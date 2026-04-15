@@ -37,7 +37,7 @@ class _ProfileViewState extends State<ProfileView> {
     final userId = prefs.getString('user_id');
     if (userId == null) throw Exception('No user ID found');
 
-    final user = await _usuariosController.getOne(userId);
+    final user = await _usuariosController.getOne(userId, populate: 'plan_id');
     if (user == null) throw Exception('User not found');
 
     Roles? role;
@@ -386,21 +386,22 @@ class _ProfileViewState extends State<ProfileView> {
                     _buildInfoItem(
                       Icons.admin_panel_settings_outlined,
                       'Rol',
-                      role?.nombre ?? 'Cargando...',
+                      role?.nombre ?? 'No asignado',
+                    ),
+                    _buildInfoItem(
+                      Icons.star_rounded,
+                      'Plan',
+                      user.plan?.nombre ?? (user.isPremium ? 'Plan Premium' : (user.isGratuito ? 'Plan Básico' : 'Sin Plan')),
+                      color: user.isPremium ? AppColors.warningBase : AppColors.secondaryBase,
                     ),
                     _buildInfoItem(
                       Icons.calendar_today_outlined,
                       'Creado',
                       _formatDate(user.createdAt),
                     ),
-                    _buildInfoItem(
-                      Icons.update_outlined,
-                      'Actualizado',
-                      _formatDate(user.updatedAt),
-                    ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
@@ -431,14 +432,15 @@ class _ProfileViewState extends State<ProfileView> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: AppColors.secondaryBase.withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
+        border: Border.all(color: Colors.grey.shade100, width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -471,10 +473,10 @@ class _ProfileViewState extends State<ProfileView> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.contentBackground,
-              borderRadius: BorderRadius.circular(8),
+              color: color != null ? color.withOpacity(0.1) : AppColors.secondaryBase.withOpacity(0.06),
+              shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 20, color: AppColors.menuBackground),
+            child: Icon(icon, size: 20, color: color ?? AppColors.secondaryBase),
           ),
           const SizedBox(width: 16),
           Expanded(

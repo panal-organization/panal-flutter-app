@@ -306,8 +306,10 @@ class UsuariosController extends ApiController {
   final String endpoint = 'usuarios';
 
   Future<List<Usuarios>> getAll() => get<Usuarios>(endpoint, Usuarios.fromJson);
-  Future<Usuarios?> getOne(String id) =>
-      getById<Usuarios>(endpoint, id, Usuarios.fromJson);
+  Future<Usuarios?> getOne(String id, {String? populate}) {
+    final queryId = populate != null ? '$id?populate=$populate' : id;
+    return getById<Usuarios>(endpoint, queryId, Usuarios.fromJson);
+  }
   Future<bool> create(Usuarios item) => post(endpoint, item.toJson());
   Future<bool> update(String id, Usuarios item) =>
       put(endpoint, id, item.toJson());

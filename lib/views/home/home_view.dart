@@ -176,7 +176,7 @@ class _HomeViewState extends State<HomeView> {
     return _messages.isEmpty
         ? _buildEmptyState()
         : ListView.builder(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
             itemCount: _messages.length,
             itemBuilder: (context, index) {
               final msg = _messages[index];
@@ -185,13 +185,27 @@ class _HomeViewState extends State<HomeView> {
                     ? Alignment.centerRight
                     : Alignment.centerLeft,
                 child: Container(
-                  margin: const EdgeInsets.symmetric(vertical: 4),
-                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(16),
+                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
                   decoration: BoxDecoration(
                     color: msg.isUser
                         ? AppColors.secondaryBase
-                        : Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(12),
+                        : Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(24),
+                      topRight: const Radius.circular(24),
+                      bottomLeft: Radius.circular(msg.isUser ? 24 : 6),
+                      bottomRight: Radius.circular(msg.isUser ? 6 : 24),
+                    ),
+                    border: msg.isUser ? null : Border.all(color: Colors.grey.shade100, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: _buildMessageContent(msg),
                 ),
@@ -206,29 +220,57 @@ class _HomeViewState extends State<HomeView> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 90,
+            height: 90,
             decoration: BoxDecoration(
-              color: Colors.blue.shade50,
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.secondaryBase.withOpacity(0.15),
+                  AppColors.secondaryBase.withOpacity(0.03),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.chat_bubble_outline,
-              color: Colors.blue.shade400,
-              size: 22,
+            child: Center(
+              child: Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.auto_awesome,
+                  color: AppColors.secondaryBase,
+                  size: 28,
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 24),
           const Text(
-            "Asistente de tickets",
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            "Asistente con IA",
+            style: TextStyle(
+              fontSize: 20, 
+              fontWeight: FontWeight.w800,
+              color: AppColors.textBase,
+            ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 10),
           Text(
             "Describe tu problema o solicitud\ny te ayudaré a gestionarlo.",
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 14,
               color: Colors.grey.shade500,
               height: 1.6,
             ),
@@ -249,13 +291,24 @@ class _HomeViewState extends State<HomeView> {
           executionResult['status'] == 'ticket_created') {
         return Row(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.check_circle, color: Colors.blue.shade600, size: 18),
-            const SizedBox(width: 8),
+            const Icon(Icons.check_circle_rounded, color: Colors.green, size: 22),
+            const SizedBox(width: 10),
             Flexible(
-              child: Text(
-                "Ticket creado\nID: ${executionResult['ticket_id']}",
-                style: const TextStyle(color: Colors.black),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Ticket Creado con Éxito",
+                    style: TextStyle(color: AppColors.textBase, fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "ID: ${executionResult['ticket_id']}",
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                  ),
+                ],
               ),
             ),
           ],
@@ -270,23 +323,48 @@ class _HomeViewState extends State<HomeView> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              children: [
+                const Icon(Icons.description_outlined, color: AppColors.secondaryBase, size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  "Borrador Generado",
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: AppColors.secondaryBase, letterSpacing: 0.5),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             Text(
               draft['titulo'] ?? '',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textBase),
             ),
-            const SizedBox(height: 4),
-            Text(draft['descripcion'] ?? ''),
-            const SizedBox(height: 4),
-            Text("Prioridad: ${draft['prioridad'] ?? ''}"),
-            Text("Categoría: ${draft['categoria'] ?? ''}"),
-            const SizedBox(height: 10),
-            ElevatedButton.icon(
-              onPressed: () => _showConfirmDialog(aiLogId, draft),
-              icon: const Icon(Icons.check, size: 16),
-              label: const Text("Confirmar ticket"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondaryBase,
-                foregroundColor: AppColors.primaryOn,
+            const SizedBox(height: 6),
+            Text(
+              draft['descripcion'] ?? '',
+              style: TextStyle(color: Colors.grey.shade700, height: 1.4, fontSize: 14),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildTag("Prioridad: ${draft['prioridad'] ?? ''}", Icons.flag_rounded),
+                _buildTag(draft['categoria'] ?? '', Icons.category_rounded),
+              ],
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: ElevatedButton.icon(
+                onPressed: () => _showConfirmDialog(aiLogId, draft),
+                icon: const Icon(Icons.done_all_rounded, size: 18, color: Colors.white),
+                label: const Text("Confirmar Ticket", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.secondaryBase,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
               ),
             ),
           ],
@@ -297,7 +375,33 @@ class _HomeViewState extends State<HomeView> {
     // Fallback texto plano
     return Text(
       msg.text.isNotEmpty ? msg.text : "Sin contenido",
-      style: TextStyle(color: msg.isUser ? Colors.white : Colors.black),
+      style: TextStyle(
+        color: msg.isUser ? Colors.white : AppColors.textBase,
+        fontSize: 15,
+        height: 1.4,
+      ),
+    );
+  }
+
+  Widget _buildTag(String text, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.contentBackground,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: Colors.grey.shade600),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey.shade700),
+          ),
+        ],
+      ),
     );
   }
 
@@ -313,7 +417,7 @@ class _HomeViewState extends State<HomeView> {
           ),
         ],
       ),
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 28),
       child: Row(
         children: [
           Expanded(
@@ -321,13 +425,14 @@ class _HomeViewState extends State<HomeView> {
               controller: _messageController,
               textInputAction: TextInputAction.send,
               onSubmitted: (_) => _sendMessage(),
+              style: const TextStyle(fontSize: 14),
               decoration: InputDecoration(
                 hintText: 'Escribe tu mensaje...',
                 filled: true,
                 fillColor: Colors.white.withOpacity(0.9),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
-                  vertical: 14,
+                  vertical: 10,
                 ),
                 hintStyle: TextStyle(
                   color: AppColors.menuBackground.withOpacity(0.6),
@@ -348,9 +453,9 @@ class _HomeViewState extends State<HomeView> {
           const SizedBox(width: 8),
           CircleAvatar(
             backgroundColor: AppColors.secondaryBase,
-            radius: 24,
+            radius: 20,
             child: IconButton(
-              icon: const Icon(Icons.send, size: 20),
+              icon: const Icon(Icons.send, size: 18),
               color: AppColors.primaryOn,
               onPressed: _sendMessage,
             ),

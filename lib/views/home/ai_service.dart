@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AiService {
-  final String baseUrl = "https://192.168.0.141:3000";
+  final String baseUrl = "http://192.168.0.141:3000";
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
