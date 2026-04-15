@@ -9,7 +9,7 @@ class AuthController {
   // https://waggish-unsecludedly-jong.ngrok-free.dev
   // Endpoint requested is POST /api/auth/sign-in
 
-  static const String _baseUrl = 'http://192.168.0.141:3000/api';
+  static const String _baseUrl = 'http://10.60.218.30:3000/api';
 
   Future<AuthResponse> signIn(String correo, String contrasena) async {
     try {

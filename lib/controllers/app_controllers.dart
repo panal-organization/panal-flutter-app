@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 
 class ApiController {
-  static const String baseUrl = 'http://192.168.0.141:3000/api';
+  static const String baseUrl = 'http://10.60.218.30:3000/api';
 
   Future<Map<String, String>> _headers() async {
     final prefs = await SharedPreferences.getInstance();
@@ -310,6 +310,7 @@ class UsuariosController extends ApiController {
     final queryId = populate != null ? '$id?populate=$populate' : id;
     return getById<Usuarios>(endpoint, queryId, Usuarios.fromJson);
   }
+
   Future<bool> create(Usuarios item) => post(endpoint, item.toJson());
   Future<bool> update(String id, Usuarios item) =>
       put(endpoint, id, item.toJson());

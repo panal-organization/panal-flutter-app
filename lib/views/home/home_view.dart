@@ -59,7 +59,7 @@ class _HomeViewState extends State<HomeView> {
     _messageController.clear();
 
     try {
-      final result = await _aiService.sendToAgent(text);
+      final result = await _aiService.sendToPlan(text);
 
       setState(() {
         _messages.add(
@@ -94,13 +94,13 @@ class _HomeViewState extends State<HomeView> {
     try {
       final result = await _aiService.confirmTicket(aiLogId);
 
-      final ticketId = result['execution_result']?['ticket_id'];
-      final status = result['execution_result']?['status'];
+      final executionResult = result['execution_result'];
+      final ticketId = executionResult?['ticket_id'];
 
       setState(() {
         _messages.add(
           ChatMessage(
-            text: status == 'ticket_created'
+            text: ticketId != null
                 ? "Ticket creado exitosamente.\nID: $ticketId"
                 : result['message'] ?? "Ticket procesado.",
             isUser: false,
@@ -114,7 +114,7 @@ class _HomeViewState extends State<HomeView> {
           content: Text(
             ticketId != null ? "Ticket creado: $ticketId" : "Ticket confirmado",
           ),
-          backgroundColor: Colors.blue,
+          backgroundColor: AppColors.secondaryBase,
         ),
       );
     } catch (e) {
@@ -187,18 +187,20 @@ class _HomeViewState extends State<HomeView> {
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.all(16),
-                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.8,
+                  ),
                   decoration: BoxDecoration(
-                    color: msg.isUser
-                        ? AppColors.secondaryBase
-                        : Colors.white,
+                    color: msg.isUser ? AppColors.secondaryBase : Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(24),
                       topRight: const Radius.circular(24),
                       bottomLeft: Radius.circular(msg.isUser ? 24 : 6),
                       bottomRight: Radius.circular(msg.isUser ? 6 : 24),
                     ),
-                    border: msg.isUser ? null : Border.all(color: Colors.grey.shade100, width: 2),
+                    border: msg.isUser
+                        ? null
+                        : Border.all(color: Colors.grey.shade100, width: 2),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.04),
@@ -260,7 +262,7 @@ class _HomeViewState extends State<HomeView> {
           const Text(
             "Asistente con IA",
             style: TextStyle(
-              fontSize: 20, 
+              fontSize: 20,
               fontWeight: FontWeight.w800,
               color: AppColors.textBase,
             ),
@@ -283,30 +285,61 @@ class _HomeViewState extends State<HomeView> {
   Widget _buildMessageContent(ChatMessage msg) {
     if (msg.data != null) {
       final data = msg.data!;
-      final action = data['action'];
       final executionResult = data['execution_result'];
+      final intent = data['intent'];
+      final action = data['action'];
+      
+      // Determine if this is a ticket draft or creation flow
+      final isTicketFlow = intent == 'create_ticket' || action == 'draft';
+      
+      // Extract draft data
+      final draft = data['result'] ?? data['draft_preview'];
+      final aiLogId = data['ai_log_id'];
+      
+      // Extract plan/steps
+      final steps = data['steps'] as List? ?? data['plan'] as List?;
 
-      // Ticket ya creado (respuesta del continue)
-      if (executionResult != null &&
-          executionResult['status'] == 'ticket_created') {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
+      // 1. Ticket ya creado (respuesta del continue o finalización)
+      if (executionResult != null && executionResult['ticket_id'] != null) {
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.check_circle_rounded, color: Colors.green, size: 22),
-            const SizedBox(width: 10),
-            Flexible(
+            Row(
+              children: [
+                const Icon(Icons.check_circle_rounded, color: Colors.green, size: 20),
+                const SizedBox(width: 8),
+                const Text(
+                  "Ticket Finalizado",
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                ),
+              ],
+            ),
+            if (steps != null) ...[
+              const SizedBox(height: 12),
+              _buildPlanSteps(steps),
+            ],
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green.withOpacity(0.1)),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "Ticket Creado con Éxito",
-                    style: TextStyle(color: AppColors.textBase, fontWeight: FontWeight.bold, fontSize: 15),
+                    "ID de Seguimiento:",
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                   ),
-                  const SizedBox(height: 4),
                   Text(
-                    "ID: ${executionResult['ticket_id']}",
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                    "${executionResult['ticket_id']}",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ],
               ),
@@ -315,58 +348,84 @@ class _HomeViewState extends State<HomeView> {
         );
       }
 
-      // Borrador pendiente de confirmación (respuesta del agent)
-      if (action == 'draft' && data['result'] != null) {
-        final draft = data['result'] as Map<String, dynamic>;
-        final aiLogId = data['ai_log_id'] as String;
-
+      // 2. Borrador o Plan pendiente de confirmación
+      if (isTicketFlow && draft != null) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.description_outlined, color: AppColors.secondaryBase, size: 18),
-                const SizedBox(width: 6),
+                const Icon(
+                  Icons.auto_awesome,
+                  color: AppColors.secondaryBase,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
                 Text(
-                  "Borrador Generado",
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: AppColors.secondaryBase, letterSpacing: 0.5),
+                  intent == 'create_ticket' ? "Plan de Acción" : "Borrador Generado",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
+                    color: AppColors.secondaryBase,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            if (steps != null) ...[
+              const SizedBox(height: 12),
+              _buildPlanSteps(steps),
+            ],
+            const SizedBox(height: 16),
             Text(
               draft['titulo'] ?? '',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textBase),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: AppColors.textBase,
+              ),
             ),
             const SizedBox(height: 6),
             Text(
               draft['descripcion'] ?? '',
-              style: TextStyle(color: Colors.grey.shade700, height: 1.4, fontSize: 14),
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                height: 1.4,
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 14),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                _buildTag("Prioridad: ${draft['prioridad'] ?? ''}", Icons.flag_rounded),
+                _buildTag(
+                  "Prioridad: ${draft['prioridad'] ?? ''}",
+                  Icons.flag_rounded,
+                ),
                 _buildTag(draft['categoria'] ?? '', Icons.category_rounded),
               ],
             ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 46,
-              child: ElevatedButton.icon(
-                onPressed: () => _showConfirmDialog(aiLogId, draft),
-                icon: const Icon(Icons.done_all_rounded, size: 18, color: Colors.white),
-                label: const Text("Confirmar Ticket", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondaryBase,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            if (aiLogId != null) ...[
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton.icon(
+                  onPressed: () => _showConfirmDialog(aiLogId, draft),
+                  icon: const Icon(Icons.done_all_rounded, size: 18, color: Colors.white),
+                  label: const Text(
+                    "Confirmar e Iniciar",
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.secondaryBase,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
         );
       }
@@ -374,12 +433,54 @@ class _HomeViewState extends State<HomeView> {
 
     // Fallback texto plano
     return Text(
-      msg.text.isNotEmpty ? msg.text : "Sin contenido",
+      msg.text.isNotEmpty ? msg.text : (msg.data?['message'] ?? "Sin contenido"),
       style: TextStyle(
         color: msg.isUser ? Colors.white : AppColors.textBase,
         fontSize: 15,
         height: 1.4,
       ),
+    );
+  }
+
+  Widget _buildPlanSteps(List steps) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: steps.map((step) {
+        final isCompleted = step['status'] == 'completed';
+        final isReady = step['status'] == 'ready' || step['status'] == 'requires_confirmation';
+        
+        String label = step['tool']?.toString() ?? 'Procesando...';
+        if (label == 'draft') label = 'Preparar borrador';
+        if (label == 'create_ticket_from_draft') label = 'Confirmar y crear ticket';
+        if (label == 'create_ticket') label = 'Generar el ticket';
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Row(
+            children: [
+              Icon(
+                isCompleted
+                    ? Icons.check_circle_rounded
+                    : (isReady ? Icons.radio_button_checked : Icons.radio_button_unchecked),
+                size: 14,
+                color: isCompleted ? Colors.green : (isReady ? AppColors.secondaryBase : Colors.grey),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isCompleted ? Colors.grey.shade700 : (isReady ? AppColors.textBase : Colors.grey),
+                    fontWeight: isReady ? FontWeight.bold : FontWeight.normal,
+                    decoration: isCompleted ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -398,7 +499,11 @@ class _HomeViewState extends State<HomeView> {
           const SizedBox(width: 6),
           Text(
             text,
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey.shade700),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade700,
+            ),
           ),
         ],
       ),
