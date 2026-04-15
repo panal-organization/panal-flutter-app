@@ -112,7 +112,9 @@ class _HomeViewState extends State<HomeView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            ticketId != null ? "Ticket creado: $ticketId" : "Ticket confirmado",
+            ticketId != null
+                ? "Ticket creado correctamente"
+                : "Ticket confirmado",
           ),
           backgroundColor: AppColors.secondaryBase,
         ),
@@ -288,14 +290,14 @@ class _HomeViewState extends State<HomeView> {
       final executionResult = data['execution_result'];
       final intent = data['intent'];
       final action = data['action'];
-      
+
       // Determine if this is a ticket draft or creation flow
       final isTicketFlow = intent == 'create_ticket' || action == 'draft';
-      
+
       // Extract draft data
       final draft = data['result'] ?? data['draft_preview'];
       final aiLogId = data['ai_log_id'];
-      
+
       // Extract plan/steps
       final steps = data['steps'] as List? ?? data['plan'] as List?;
 
@@ -306,11 +308,18 @@ class _HomeViewState extends State<HomeView> {
           children: [
             Row(
               children: [
-                const Icon(Icons.check_circle_rounded, color: Colors.green, size: 20),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: Colors.green,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 const Text(
                   "Ticket Finalizado",
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
                 ),
               ],
             ),
@@ -362,7 +371,9 @@ class _HomeViewState extends State<HomeView> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  intent == 'create_ticket' ? "Plan de Acción" : "Borrador Generado",
+                  intent == 'create_ticket'
+                      ? "Plan de Acción"
+                      : "Borrador Generado",
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 12,
@@ -413,15 +424,24 @@ class _HomeViewState extends State<HomeView> {
                 height: 46,
                 child: ElevatedButton.icon(
                   onPressed: () => _showConfirmDialog(aiLogId, draft),
-                  icon: const Icon(Icons.done_all_rounded, size: 18, color: Colors.white),
+                  icon: const Icon(
+                    Icons.done_all_rounded,
+                    size: 18,
+                    color: Colors.white,
+                  ),
                   label: const Text(
                     "Confirmar e Iniciar",
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.secondaryBase,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -433,7 +453,9 @@ class _HomeViewState extends State<HomeView> {
 
     // Fallback texto plano
     return Text(
-      msg.text.isNotEmpty ? msg.text : (msg.data?['message'] ?? "Sin contenido"),
+      msg.text.isNotEmpty
+          ? msg.text
+          : (msg.data?['message'] ?? "Sin contenido"),
       style: TextStyle(
         color: msg.isUser ? Colors.white : AppColors.textBase,
         fontSize: 15,
@@ -447,11 +469,14 @@ class _HomeViewState extends State<HomeView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: steps.map((step) {
         final isCompleted = step['status'] == 'completed';
-        final isReady = step['status'] == 'ready' || step['status'] == 'requires_confirmation';
-        
+        final isReady =
+            step['status'] == 'ready' ||
+            step['status'] == 'requires_confirmation';
+
         String label = step['tool']?.toString() ?? 'Procesando...';
         if (label == 'draft') label = 'Preparar borrador';
-        if (label == 'create_ticket_from_draft') label = 'Confirmar y crear ticket';
+        if (label == 'create_ticket_from_draft')
+          label = 'Confirmar y crear ticket';
         if (label == 'create_ticket') label = 'Generar el ticket';
 
         return Padding(
@@ -461,9 +486,13 @@ class _HomeViewState extends State<HomeView> {
               Icon(
                 isCompleted
                     ? Icons.check_circle_rounded
-                    : (isReady ? Icons.radio_button_checked : Icons.radio_button_unchecked),
+                    : (isReady
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked),
                 size: 14,
-                color: isCompleted ? Colors.green : (isReady ? AppColors.secondaryBase : Colors.grey),
+                color: isCompleted
+                    ? Colors.green
+                    : (isReady ? AppColors.secondaryBase : Colors.grey),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -471,7 +500,9 @@ class _HomeViewState extends State<HomeView> {
                   label,
                   style: TextStyle(
                     fontSize: 12,
-                    color: isCompleted ? Colors.grey.shade700 : (isReady ? AppColors.textBase : Colors.grey),
+                    color: isCompleted
+                        ? Colors.grey.shade700
+                        : (isReady ? AppColors.textBase : Colors.grey),
                     fontWeight: isReady ? FontWeight.bold : FontWeight.normal,
                     decoration: isCompleted ? TextDecoration.lineThrough : null,
                   ),
