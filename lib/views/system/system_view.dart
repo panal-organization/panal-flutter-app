@@ -78,11 +78,6 @@ class SystemView extends StatelessWidget {
           },
         ),
         _buildSettingsTile(
-          icon: Icons.notifications_outlined,
-          title: 'Notificaciones',
-          onTap: () {},
-        ),
-        _buildSettingsTile(
           icon: Icons.business_center_outlined,
           title: 'Cambiar Espacio de Trabajo',
           onTap: () {

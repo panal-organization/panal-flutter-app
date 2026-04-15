@@ -62,15 +62,19 @@ class _HomeViewState extends State<HomeView> {
       final result = await _aiService.sendToAgent(text);
 
       setState(() {
-        _messages.add(ChatMessage(
-          text: result['message'] ?? "Respuesta generada",
-          isUser: false,
-          data: result,
-        ));
+        _messages.add(
+          ChatMessage(
+            text: result['message'] ?? "Respuesta generada",
+            isUser: false,
+            data: result,
+          ),
+        );
       });
     } catch (e) {
       setState(() {
-        _messages.add(ChatMessage(text: "Asistente no disponible", isUser: false));
+        _messages.add(
+          ChatMessage(text: "Asistente no disponible", isUser: false),
+        );
       });
     } finally {
       setState(() {
@@ -94,28 +98,30 @@ class _HomeViewState extends State<HomeView> {
       final status = result['execution_result']?['status'];
 
       setState(() {
-        _messages.add(ChatMessage(
-          text: status == 'ticket_created'
-              ? "Ticket creado exitosamente.\nID: $ticketId"
-              : result['message'] ?? "Ticket procesado.",
-          isUser: false,
-          data: result,
-        ));
+        _messages.add(
+          ChatMessage(
+            text: status == 'ticket_created'
+                ? "Ticket creado exitosamente.\nID: $ticketId"
+                : result['message'] ?? "Ticket procesado.",
+            isUser: false,
+            data: result,
+          ),
+        );
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            ticketId != null
-                ? "Ticket creado: $ticketId"
-                : "Ticket confirmado",
+            ticketId != null ? "Ticket creado: $ticketId" : "Ticket confirmado",
           ),
           backgroundColor: Colors.blue,
         ),
       );
     } catch (e) {
       setState(() {
-        _messages.add(ChatMessage(text: "Asistente no disponible", isUser: false));
+        _messages.add(
+          ChatMessage(text: "Asistente no disponible", isUser: false),
+        );
       });
     } finally {
       setState(() {
@@ -133,7 +139,10 @@ class _HomeViewState extends State<HomeView> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(draft['titulo'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              draft['titulo'] ?? '',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 6),
             Text(draft['descripcion'] ?? ''),
             const SizedBox(height: 6),
@@ -172,8 +181,9 @@ class _HomeViewState extends State<HomeView> {
             itemBuilder: (context, index) {
               final msg = _messages[index];
               return Align(
-                alignment:
-                    msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
+                alignment: msg.isUser
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
                 child: Container(
                   margin: const EdgeInsets.symmetric(vertical: 4),
                   padding: const EdgeInsets.all(12),
@@ -202,8 +212,11 @@ class _HomeViewState extends State<HomeView> {
               color: Colors.blue.shade50,
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.chat_bubble_outline,
-                color: Colors.blue.shade400, size: 22),
+            child: Icon(
+              Icons.chat_bubble_outline,
+              color: Colors.blue.shade400,
+              size: 22,
+            ),
           ),
           const SizedBox(height: 12),
           const Text(
@@ -214,8 +227,11 @@ class _HomeViewState extends State<HomeView> {
           Text(
             "Describe tu problema o solicitud\ny te ayudaré a gestionarlo.",
             textAlign: TextAlign.center,
-            style:
-                TextStyle(fontSize: 13, color: Colors.grey.shade500, height: 1.6),
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade500,
+              height: 1.6,
+            ),
           ),
         ],
       ),
@@ -309,8 +325,10 @@ class _HomeViewState extends State<HomeView> {
                 hintText: 'Escribe tu mensaje...',
                 filled: true,
                 fillColor: Colors.white.withOpacity(0.9),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 hintStyle: TextStyle(
                   color: AppColors.menuBackground.withOpacity(0.6),
                 ),
@@ -502,7 +520,9 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Future<void> _openUpgradePage() async {
-    final upgradeUrl = Uri.parse('http://localhost:5173/panal-web-application/pricing');
+    final upgradeUrl = Uri.parse(
+      'http://192.168.0.141:5173/panal-web-application/pricing',
+    );
     if (await canLaunchUrl(upgradeUrl)) {
       await launchUrl(upgradeUrl, mode: LaunchMode.externalApplication);
     }

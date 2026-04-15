@@ -125,7 +125,7 @@ class _MainLayoutState extends State<MainLayout> {
             bottom: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 0),
-              child: IndexedStack(index: _currentIndex, children: _pages),
+              child: _pages[_currentIndex],
             ),
           ),
         ),

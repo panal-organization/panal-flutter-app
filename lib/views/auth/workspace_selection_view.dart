@@ -384,8 +384,10 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
                                       Material(
                                         color: Colors.transparent,
                                         child: IconButton(
-                                          onPressed: () =>
-                                              _selectWorkspace(ws.id!, planId: ws.planId),
+                                          onPressed: () => _selectWorkspace(
+                                            ws.id!,
+                                            planId: ws.planId,
+                                          ),
                                           icon: const Icon(
                                             Icons.chevron_right_rounded,
                                             size: 32,
@@ -539,7 +541,9 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
   }
 
   Future<void> _openUpgradePage() async {
-    final upgradeUrl = Uri.parse('http://localhost:5173/panal-web-application/pricing');
+    final upgradeUrl = Uri.parse(
+      'http://192.168.0.141:5173/panal-web-application/pricing',
+    );
     if (await canLaunchUrl(upgradeUrl)) {
       await launchUrl(upgradeUrl, mode: LaunchMode.externalApplication);
     } else {
@@ -625,7 +629,8 @@ class _WorkspaceSelectionViewState extends State<WorkspaceSelectionView> {
           final isPremiumWs = ws.planId == premiumId;
           if (!isPremiumWs) {
             // Verificar cuántos miembros tiene el workspace
-            final members = await WorkspacesUsuariosController().getByWorkspaceId(ws.id!);
+            final members = await WorkspacesUsuariosController()
+                .getByWorkspaceId(ws.id!);
             if (members.isNotEmpty) {
               if (!mounted) return;
               setState(() => _isLoading = false);

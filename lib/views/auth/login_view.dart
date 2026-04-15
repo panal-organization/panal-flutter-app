@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../controllers/auth_controller.dart';
 import '../../layout/main.layout.dart';
+import 'workspace_selection_view.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_toast.dart';
 
@@ -44,7 +45,7 @@ class _LoginViewState extends State<LoginView> {
 
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const MainLayout()),
+          MaterialPageRoute(builder: (_) => const WorkspaceSelectionView()),
         );
       }
     } catch (e) {

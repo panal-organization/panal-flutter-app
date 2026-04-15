@@ -109,18 +109,26 @@ class _MaintenanceViewState extends State<MaintenanceView> {
           ),
         ),
         Expanded(
-          child: _maintOrdenes.isEmpty
-              ? _buildEmptyState()
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  color: AppColors.secondaryBase,
-                  child: ListView.builder(
+          child: RefreshIndicator(
+            onRefresh: _loadData,
+            color: AppColors.secondaryBase,
+            child: _maintOrdenes.isEmpty
+                ? Stack(
+                    children: [
+                      _buildEmptyState(),
+                      ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                      ),
+                    ],
+                  )
+                : ListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
                     itemCount: _maintOrdenes.length,
                     itemBuilder: (context, index) => _buildMaintCard(_maintOrdenes[index]),
                   ),
-                ),
+          ),
         ),
+
       ],
     );
   }

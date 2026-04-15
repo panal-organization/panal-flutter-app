@@ -4,8 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 
 class ApiController {
-  static const String baseUrl =
-      'https://waggish-unsecludedly-jong.ngrok-free.dev/api';
+  static const String baseUrl = 'http://192.168.0.141:3000/api';
 
   Future<Map<String, String>> _headers() async {
     final prefs = await SharedPreferences.getInstance();
@@ -576,7 +575,7 @@ class WorkspacesUsuariosController extends ApiController {
       );
   Future<List<WorkspacesUsuarios>> getByWorkspaceId(String workspaceId) =>
       get<WorkspacesUsuarios>(
-        '$endpoint?workspace_id=$workspaceId&populate=usuario_id',
+        '$endpoint?workspace_id=$workspaceId&populate=usuario_id,workspace_id',
         WorkspacesUsuarios.fromJson,
       );
   Future<WorkspacesUsuarios?> getOne(String id) =>

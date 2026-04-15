@@ -252,13 +252,16 @@ class _WarehouseViewState extends State<WarehouseView> {
       ),
     );
   }
+
   void _onCreateWarehouseTap() {
     // Free plan: max 1 warehouse
     if (!_isPremium && _almacenes.length >= 1) {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: Row(
             children: const [
               Icon(Icons.star_rounded, color: AppColors.warningBase, size: 22),
@@ -279,21 +282,33 @@ class _WarehouseViewState extends State<WarehouseView> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Entendido', style: TextStyle(color: Colors.grey)),
+              child: const Text(
+                'Entendido',
+                style: TextStyle(color: Colors.grey),
+              ),
             ),
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.pop(context);
                 _openUpgradePage();
               },
-              icon: const Icon(Icons.open_in_new, size: 16, color: Colors.white),
+              icon: const Icon(
+                Icons.open_in_new,
+                size: 16,
+                color: Colors.white,
+              ),
               label: const Text(
                 'Ver Premium',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.warningBase,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
           ],
@@ -305,12 +320,13 @@ class _WarehouseViewState extends State<WarehouseView> {
   }
 
   Future<void> _openUpgradePage() async {
-    final upgradeUrl = Uri.parse('http://localhost:5173/panal-web-application/pricing');
+    final upgradeUrl = Uri.parse(
+      'http://192.168.0.141:5173/panal-web-application/pricing',
+    );
     if (await canLaunchUrl(upgradeUrl)) {
       await launchUrl(upgradeUrl, mode: LaunchMode.externalApplication);
     }
   }
-
 
   Future<void> _showCreateWarehouseDialog() async {
     final nameController = TextEditingController();

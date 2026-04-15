@@ -558,10 +558,16 @@ class _TicketsTabState extends State<TicketsTab> {
         showDialog(
           context: context,
           builder: (_) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: Row(
               children: const [
-                Icon(Icons.star_rounded, color: AppColors.warningBase, size: 22),
+                Icon(
+                  Icons.star_rounded,
+                  color: AppColors.warningBase,
+                  size: 22,
+                ),
                 SizedBox(width: 8),
                 Text(
                   'Límite del día alcanzado',
@@ -580,24 +586,41 @@ class _TicketsTabState extends State<TicketsTab> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Entendido', style: TextStyle(color: Colors.grey)),
+                child: const Text(
+                  'Entendido',
+                  style: TextStyle(color: Colors.grey),
+                ),
               ),
               ElevatedButton.icon(
                 onPressed: () async {
                   Navigator.pop(context);
-                  final upgradeUrl = Uri.parse('http://localhost:5173/panal-web-application/pricing');
+                  final upgradeUrl = Uri.parse(
+                    'http://192.168.0.141:5173/panal-web-application/pricing',
+                  );
                   if (await canLaunchUrl(upgradeUrl)) {
-                    await launchUrl(upgradeUrl, mode: LaunchMode.externalApplication);
+                    await launchUrl(
+                      upgradeUrl,
+                      mode: LaunchMode.externalApplication,
+                    );
                   }
                 },
-                icon: const Icon(Icons.open_in_new, size: 16, color: Colors.white),
+                icon: const Icon(
+                  Icons.open_in_new,
+                  size: 16,
+                  color: Colors.white,
+                ),
                 label: const Text(
                   'Ver Premium',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.warningBase,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
             ],
